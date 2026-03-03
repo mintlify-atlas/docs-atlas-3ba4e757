@@ -1,0 +1,112 @@
+---
+title: setup
+description: First-time setup wizard for Pixelmuse CLI
+---
+
+The `setup` command guides you through initial configuration of the Pixelmuse CLI, including authentication, MCP server integration, and default settings.
+
+## Usage
+
+```bash
+pixelmuse setup
+```
+
+## What it does
+
+The setup wizard walks you through several steps:
+
+### Step 1: Authentication
+
+- Checks for existing credentials
+- If not authenticated, launches the [login flow](/cli/login-logout)
+- Validates credentials and displays account information
+
+### Step 2: MCP Server Configuration (Optional)
+
+If you have compatible editors installed (Claude Desktop, Cline, etc.), the wizard will:
+
+- Detect installed editors
+- Prompt you to configure MCP integration for each
+- Set up the Pixelmuse MCP server for AI agent access
+
+Example prompt:
+```
+Configure Claude Desktop? [Y/n]
+```
+
+### Step 3: Default Settings
+
+Customize default generation parameters:
+
+<ParamField path="Model" type="string" default="nano-banana-2">
+  Default model for image generation. Options:
+  - `nano-banana-2`
+  - `nano-banana-pro`
+  - `flux-schnell`
+  - `imagen-3`
+  - `recraft-v4`
+  - `recraft-v4-pro`
+</ParamField>
+
+<ParamField path="Aspect ratio" type="string" default="1:1">
+  Default aspect ratio. Options: `1:1`, `16:9`, `9:16`, `4:3`, `3:4`, `21:9`
+</ParamField>
+
+<ParamField path="Style" type="string" default="none">
+  Default style preset. Options: `none`, `realistic`, `anime`, `artistic`
+</ParamField>
+
+## Example Session
+
+```bash
+$ pixelmuse setup
+
+  Pixelmuse Setup
+  AI image generation from the terminal
+
+Step 1: Authenticate
+
+  Your code: ABCD-1234
+
+  Opening https://pixelmuse.studio/activate?code=ABCD-1234
+  Or visit https://pixelmuse.studio/activate and enter the code manually
+
+✔ Authenticated as user@example.com (100 credits)
+
+Step 2: MCP Server (AI agent integration)
+
+  Configure Claude Desktop? [Y/n] y
+  ✓ Claude Desktop MCP configured
+
+Step 3: Defaults
+
+  Customize default model and settings? [y/N] y
+  Model: nano-banana-2 | nano-banana-pro | flux-schnell | imagen-3 | recraft-v4 | recraft-v4-pro
+  Choice [nano-banana-2]: nano-banana-pro
+  Aspect ratio: 1:1 | 16:9 | 9:16 | 4:3 | 3:4 | 21:9
+  Choice [1:1]: 16:9
+  Style: none | realistic | anime | artistic
+  Choice [none]: realistic
+  ✓ Defaults saved
+
+  Setup complete!
+
+  Try it: pixelmuse "a cat floating through space"
+  TUI:    pixelmuse ui
+  Help:   pixelmuse --help
+```
+
+## Re-running Setup
+
+You can run `setup` again at any time to:
+- Re-authenticate if credentials are invalid
+- Configure additional editors
+- Update default settings
+
+The wizard will detect existing authentication and skip to configuration steps.
+
+## Related Commands
+
+- [login](/cli/login-logout) - Manual authentication
+- [account](/cli/account) - View account details
+- [models](/cli/models) - List available models

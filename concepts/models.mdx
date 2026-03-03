@@ -1,0 +1,318 @@
+---
+title: Models
+description: All available image generation models with costs, capabilities, and use cases
+---
+
+Pixelmuse supports six AI image generation models, each optimized for different use cases. Models are billed per generation in credits.
+
+## Available models
+
+### nano-banana-2
+
+Fast, low-cost model for general-purpose image generation.
+
+<Info>
+**Cost:** 1 credit per generation  
+**Best for:** Quick iterations, testing, general images  
+**Aspect ratios:** All supported  
+**Speed:** ~5-10 seconds
+</Info>
+
+```bash
+pixelmuse "sunset over mountains" -m nano-banana-2
+```
+
+**Strengths:**
+- Fastest generation time
+- Lowest cost (1 credit)
+- Good for rapid prototyping
+- Supports all aspect ratios
+
+**Best used for:**
+- Quick mockups and iterations
+- Testing prompts before using premium models
+- High-volume generation
+- General-purpose images
+
+---
+
+### nano-banana-pro
+
+Enhanced version with better quality and detail.
+
+<Info>
+**Cost:** 2 credits per generation  
+**Best for:** Higher quality general images  
+**Aspect ratios:** All supported  
+**Speed:** ~8-15 seconds
+</Info>
+
+```bash
+pixelmuse "detailed portrait of a wizard" -m nano-banana-pro
+```
+
+**Strengths:**
+- Better detail than nano-banana-2
+- Still fast and affordable
+- Improved prompt adherence
+- Versatile across styles
+
+**Best used for:**
+- Production-ready images
+- Content where quality matters
+- Detailed scenes and characters
+
+---
+
+### flux-schnell
+
+Black Forest Labs' Flux model optimized for speed.
+
+<Info>
+**Cost:** 2 credits per generation  
+**Best for:** Artistic images, creative projects  
+**Aspect ratios:** All supported  
+**Speed:** ~10-20 seconds
+</Info>
+
+```bash
+pixelmuse "abstract art, vibrant colors" -m flux-schnell -s artistic
+```
+
+**Strengths:**
+- Excellent artistic interpretation
+- Strong understanding of complex prompts
+- Good text rendering in images
+- Balanced speed and quality
+
+**Best used for:**
+- Creative and artistic projects
+- Complex scene composition
+- Stylized content
+- Marketing materials
+
+---
+
+### imagen-3
+
+Google's Imagen 3 model for photorealistic generation.
+
+<Info>
+**Cost:** 3 credits per generation  
+**Best for:** Photorealistic images, product shots  
+**Aspect ratios:** All supported  
+**Speed:** ~15-30 seconds
+</Info>
+
+```bash
+pixelmuse "product photo of a watch on marble" -m imagen-3 -s realistic
+```
+
+**Strengths:**
+- Exceptional photorealism
+- Accurate lighting and materials
+- Strong detail preservation
+- Professional-grade quality
+
+**Best used for:**
+- Product photography
+- Realistic scenes and environments
+- Professional presentations
+- High-fidelity imagery
+
+---
+
+### recraft-v4
+
+Recraft AI's versatile model with strong style control.
+
+<Info>
+**Cost:** 2 credits per generation  
+**Best for:** Design work, illustrations, branding  
+**Aspect ratios:** All supported  
+**Speed:** ~10-20 seconds
+</Info>
+
+```bash
+pixelmuse "logo design, modern minimalist" -m recraft-v4
+```
+
+**Strengths:**
+- Excellent for design work
+- Consistent style application
+- Good for branding and identity
+- Clean, professional results
+
+**Best used for:**
+- Logo and icon design
+- Brand identity work
+- Illustrations and graphics
+- UI/UX design assets
+
+---
+
+### recraft-v4-pro
+
+Premium version with maximum quality and control.
+
+<Info>
+**Cost:** 4 credits per generation  
+**Best for:** Premium design work, final deliverables  
+**Aspect ratios:** All supported  
+**Speed:** ~15-30 seconds
+</Info>
+
+```bash
+pixelmuse "hero image for website, cyberpunk" -m recraft-v4-pro
+```
+
+**Strengths:**
+- Highest quality output
+- Maximum detail and precision
+- Best prompt interpretation
+- Professional-grade results
+
+**Best used for:**
+- Final production assets
+- Premium client work
+- Hero images and key visuals
+- When quality is paramount
+
+## Model comparison
+
+| Model | Credits | Speed | Best For |
+|-------|---------|-------|----------|
+| `nano-banana-2` | 1 | ⚡⚡⚡ | Quick iterations, testing |
+| `nano-banana-pro` | 2 | ⚡⚡ | General purpose, quality |
+| `flux-schnell` | 2 | ⚡⚡ | Artistic, creative work |
+| `imagen-3` | 3 | ⚡ | Photorealism, products |
+| `recraft-v4` | 2 | ⚡⚡ | Design, branding, logos |
+| `recraft-v4-pro` | 4 | ⚡ | Premium design, finals |
+
+## Supported aspect ratios
+
+All models support these aspect ratios:
+
+```typescript
+type AspectRatio =
+  | '1:1'   // Square
+  | '16:9'  // Landscape (widescreen)
+  | '9:16'  // Portrait (mobile)
+  | '3:2'   // Standard photo
+  | '2:3'   // Portrait photo
+  | '4:5'   // Instagram portrait
+  | '5:4'   // Instagram landscape
+  | '3:4'   // Classic portrait
+  | '4:3'   // Classic landscape
+  | '21:9'  // Ultra-wide
+  | '9:21'  // Ultra-tall
+```
+
+<Tip>
+Set a default aspect ratio with `pixelmuse setup` to avoid specifying it every time.
+</Tip>
+
+## Programmatic access
+
+### List models via CLI
+
+```bash
+pixelmuse models
+```
+
+Output:
+```
+Model                  Credits    Best For
+──────────────────────────────────────────────────────────────────────
+Nano Banana v2         1          Fast, Low cost, General purpose
+Nano Banana Pro        2          Quality, Versatility, Detail
+Flux Schnell           2          Artistic, Creative, Complex prompts
+Imagen 3               3          Photorealistic, Professional
+Recraft v4             2          Design, Branding, Illustrations
+Recraft v4 Pro         4          Premium design, Maximum quality
+```
+
+### List models via API
+
+```typescript
+import { PixelmuseClient } from 'pixelmuse'
+
+const models = await PixelmuseClient.listModels()
+
+for (const model of models) {
+  console.log(`${model.name}: ${model.credit_cost} credits`)
+  console.log(`Strengths: ${model.strengths.join(', ')}`)
+}
+```
+
+### Get model details
+
+```typescript
+import { PixelmuseClient } from 'pixelmuse'
+
+const model = await PixelmuseClient.getModel('flux-schnell')
+
+console.log(model)
+// {
+//   id: 'flux-schnell',
+//   name: 'Flux Schnell',
+//   description: '...',
+//   credit_cost: 2,
+//   supported_aspect_ratios: ['1:1', '16:9', ...],
+//   is_pro: false,
+//   supports_image_input: false,
+//   strengths: ['Artistic', 'Creative', 'Complex prompts'],
+//   weaknesses: [...]
+// }
+```
+
+## Model selection guide
+
+<AccordionGroup>
+  <Accordion title="When to use nano-banana-2">
+    Use for rapid iterations, testing prompts, or high-volume generation where cost is a priority. Perfect for prototyping before committing to premium models.
+  </Accordion>
+
+  <Accordion title="When to use nano-banana-pro">
+    Your go-to for most production needs. Balanced cost and quality make it ideal for content creation, social media, and general-purpose imagery.
+  </Accordion>
+
+  <Accordion title="When to use flux-schnell">
+    Choose for artistic projects, creative campaigns, or complex scenes requiring strong prompt interpretation. Excellent for marketing and editorial content.
+  </Accordion>
+
+  <Accordion title="When to use imagen-3">
+    Select for photorealistic needs: product photography, architectural visualization, or any scenario requiring professional-grade realism.
+  </Accordion>
+
+  <Accordion title="When to use recraft-v4">
+    Best for design work: logos, icons, illustrations, and UI assets. Provides clean, consistent results with strong style control.
+  </Accordion>
+
+  <Accordion title="When to use recraft-v4-pro">
+    Reserve for final deliverables, premium client work, or hero images where maximum quality justifies the higher cost.
+  </Accordion>
+</AccordionGroup>
+
+<Note>
+Model availability and pricing are fetched in real-time from the Pixelmuse API. Run `pixelmuse models` for the latest information.
+</Note>
+
+## Credit costs and billing
+
+Credits are deducted per generation:
+
+```bash
+# Check your balance
+pixelmuse account
+
+# Example output:
+Email:    you@example.com
+Plan:     free
+Credits:  25 (25 subscription + 0 purchased)
+Rate:     10 req/min
+```
+
+<Card title="Managing credits" icon="credit-card" href="/billing/credits">
+  Learn about credit packages, subscriptions, and usage tracking
+</Card>

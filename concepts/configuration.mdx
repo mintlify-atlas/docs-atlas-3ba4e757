@@ -1,0 +1,400 @@
+---
+title: Configuration
+description: Configure defaults, paths, and settings for Pixelmuse CLI
+---
+
+Pixelmuse follows XDG Base Directory standards for configuration and data storage, with sensible defaults and easy customization.
+
+## Configuration files
+
+Pixelmuse stores configuration in standard locations:
+
+<CodeGroup>
+```bash macOS
+~/.config/pixelmuse-cli/config.yaml        # Settings
+~/.config/pixelmuse-cli/auth.json          # Credentials
+~/.config/pixelmuse-cli/prompts/           # Templates
+~/Library/Application Support/pixelmuse-cli/generations/  # Saved images
+```
+
+```bash Linux
+~/.config/pixelmuse-cli/config.yaml        # Settings
+~/.config/pixelmuse-cli/auth.json          # Credentials  
+~/.config/pixelmuse-cli/prompts/           # Templates
+~/.local/share/pixelmuse-cli/generations/  # Saved images
+```
+
+```bash Windows
+%APPDATA%/pixelmuse-cli/config.yaml        # Settings
+%APPDATA%/pixelmuse-cli/auth.json          # Credentials
+%APPDATA%/pixelmuse-cli/prompts/           # Templates
+%LOCALAPPDATA%/pixelmuse-cli/generations/  # Saved images
+```
+</CodeGroup>
+
+<Info>
+Directories are created automatically on first run. You don't need to create them manually.
+</Info>
+
+## Settings file
+
+The `config.yaml` file stores user defaults:
+
+```yaml
+defaultModel: nano-banana-2
+defaultAspectRatio: '1:1'
+defaultStyle: none
+defaultVisibility: private
+autoPreview: true
+autoSave: true
+```
+
+### Settings structure
+
+```typescript
+interface Settings {
+  defaultModel: string           // Model to use if -m not specified
+  defaultAspectRatio: string     // Aspect ratio if -a not specified  
+  defaultStyle: string           // Style if -s not specified
+  defaultVisibility: 'public' | 'private'  // Image visibility
+  autoPreview: boolean           // Show terminal preview after generation
+  autoSave: boolean              // Save images to disk automatically
+}
+```
+
+### Default values
+
+```typescript
+const DEFAULT_SETTINGS = {
+  defaultModel: 'nano-banana-2',
+  defaultAspectRatio: '1:1',
+  defaultStyle: 'none',
+  defaultVisibility: 'private',
+  autoPreview: true,
+  autoSave: true,
+}
+```
+
+## Interactive setup
+
+Run the setup wizard to configure defaults interactively:
+
+```bash
+pixelmuse setup
+```
+
+The wizard:
+1. Authenticates your account (or validates existing credentials)
+2. Detects and configures MCP servers for supported editors
+3. Optionally customizes default model, aspect ratio, and style
+
+<Steps>
+  <Step title="Authentication">
+    ```
+    Pixelmuse Setup
+    AI image generation from the terminal
+    
+    Step 1: Authenticate
+    Opening https://pixelmuse.studio/device...
+    ✓ Authenticated as you@example.com (25 credits)
+    ```
+  </Step>
+  
+  <Step title="MCP configuration">
+    ```
+    Step 2: MCP Server (AI agent integration)
+    Configure Claude Desktop? [Y/n] y
+    ✓ Claude Desktop MCP configured
+    ```
+  </Step>
+  
+  <Step title="Defaults">
+    ```
+    Step 3: Defaults
+    Customize default model and settings? [y/N] y
+    
+    Model: nano-banana-2 | nano-banana-pro | flux-schnell | ...
+    Choice [nano-banana-2]: flux-schnell
+    
+    Aspect ratio: 1:1 | 16:9 | 9:16 | 4:3 | ...
+    Choice [1:1]: 16:9
+    
+    Style: none | realistic | anime | artistic
+    Choice [none]: artistic
+    
+    ✓ Defaults saved
+    ```
+  </Step>
+</Steps>
+
+## Programmatic configuration
+
+### Reading settings
+
+```typescript
+import { readSettings } from 'pixelmuse'
+
+const settings = readSettings()
+console.log(settings.defaultModel)      // 'nano-banana-2'
+console.log(settings.defaultAspectRatio) // '1:1'
+```
+
+### Writing settings
+
+```typescript
+import { readSettings, writeSettings } from 'pixelmuse'
+
+const settings = readSettings()
+settings.defaultModel = 'flux-schnell'
+settings.defaultAspectRatio = '16:9'
+writeSettings(settings)
+```
+
+### Path constants
+
+Access configuration paths programmatically:
+
+```typescript
+import { PATHS } from 'pixelmuse'
+
+console.log(PATHS.config)       // ~/.config/pixelmuse-cli
+console.log(PATHS.data)         // ~/.local/share/pixelmuse-cli (Linux)
+console.log(PATHS.auth)         // ~/.config/pixelmuse-cli/auth.json
+console.log(PATHS.settings)     // ~/.config/pixelmuse-cli/config.yaml
+console.log(PATHS.prompts)      // ~/.config/pixelmuse-cli/prompts
+console.log(PATHS.generations)  // ~/.local/share/pixelmuse-cli/generations
+```
+
+<Note>
+Paths are XDG-compliant and platform-aware. On macOS, data is stored in `~/Library/Application Support/`. On Linux, it follows `$XDG_CONFIG_HOME` and `$XDG_DATA_HOME`.
+</Note>
+
+## Authentication
+
+API keys are stored securely in the system keyring when available, with fallback to JSON.
+
+### Keyring storage (preferred)
+
+On macOS and Linux with `gnome-keyring`, credentials are stored in the OS keyring:
+
+```bash
+# Keys stored in macOS Keychain or gnome-keyring
+pixelmuse login
+```
+
+The package `keyring-node` is an optional dependency:
+
+```json
+{
+  "optionalDependencies": {
+    "keyring-node": "^1.0.1"
+  }
+}
+```
+
+### JSON fallback
+
+If keyring is unavailable, credentials are stored in `auth.json`:
+
+```json
+{
+  "apiKey": "pm_live_...",
+  "createdAt": "2026-03-03T10:15:30.000Z"
+}
+```
+
+<Warning>
+The `auth.json` file contains your API key in plaintext. Ensure it has restrictive permissions:
+
+```bash
+chmod 600 ~/.config/pixelmuse-cli/auth.json
+```
+</Warning>
+
+### Manual API key configuration
+
+You can also set the API key via environment variable:
+
+```bash
+export PIXELMUSE_API_KEY=pm_live_...
+pixelmuse "your prompt"
+```
+
+Priority order:
+1. `PIXELMUSE_API_KEY` environment variable (highest)
+2. System keyring (if available)
+3. `auth.json` file (fallback)
+
+### Key validation
+
+```typescript
+import { isValidKeyFormat } from 'pixelmuse'
+
+console.log(isValidKeyFormat('pm_live_abc123'))  // true
+console.log(isValidKeyFormat('pm_test_xyz789'))  // true
+console.log(isValidKeyFormat('invalid'))         // false
+```
+
+Valid key formats:
+- `pm_live_...` (production)
+- `pm_test_...` (testing)
+
+## MCP Server configuration
+
+MCP servers are configured per editor in their respective config files.
+
+### Claude Desktop
+
+Location: `~/Library/Application Support/Claude/claude_desktop_config.json` (macOS)
+
+```json
+{
+  "mcpServers": {
+    "pixelmuse": {
+      "command": "npx",
+      "args": ["-y", "pixelmuse", "mcp"],
+      "env": {
+        "PIXELMUSE_API_KEY": "pm_live_..."
+      }
+    }
+  }
+}
+```
+
+### Cline (VS Code)
+
+Location: `~/Library/Application Support/Code/User/globalStorage/saoudrizwan.claude-dev/settings/cline_mcp_settings.json`
+
+```json
+{
+  "mcpServers": {
+    "pixelmuse": {
+      "command": "npx",
+      "args": ["-y", "pixelmuse", "mcp"],
+      "env": {
+        "PIXELMUSE_API_KEY": "pm_live_..."
+      }
+    }
+  }
+}
+```
+
+### Auto-detection
+
+The `setup` command automatically detects installed editors:
+
+```typescript
+import { detectEditors } from 'pixelmuse'
+
+const editors = detectEditors()
+// Returns:
+// [
+//   {
+//     name: 'Claude Desktop',
+//     installed: true,
+//     configPath: '~/Library/Application Support/Claude/claude_desktop_config.json'
+//   },
+//   ...
+// ]
+```
+
+### Manual configuration
+
+```typescript
+import { configureMcp } from 'pixelmuse'
+
+const editor = {
+  name: 'Claude Desktop',
+  configPath: '~/Library/Application Support/Claude/claude_desktop_config.json'
+}
+
+const apiKey = 'pm_live_...'
+configureMcp(editor, apiKey)
+// Updates config file with MCP server entry
+```
+
+## Environment variables
+
+| Variable | Description | Default |
+|----------|-------------|----------|
+| `PIXELMUSE_API_KEY` | API key (overrides keyring/file) | - |
+| `XDG_CONFIG_HOME` | Config directory (Linux) | `~/.config` |
+| `XDG_DATA_HOME` | Data directory (Linux) | `~/.local/share` |
+
+## Directory initialization
+
+Directories are created automatically:
+
+```typescript
+import { ensureDirs } from 'pixelmuse'
+
+ensureDirs()
+// Creates:
+// - PATHS.config
+// - PATHS.data  
+// - PATHS.prompts
+// - PATHS.generations
+```
+
+This is called automatically on first run, but you can invoke it manually if needed.
+
+## Migration and portability
+
+To migrate configuration to a new machine:
+
+<Steps>
+  <Step title="Export configuration">
+    ```bash
+    # On old machine
+    tar -czf pixelmuse-config.tar.gz \
+      ~/.config/pixelmuse-cli \
+      ~/.local/share/pixelmuse-cli
+    ```
+  </Step>
+  
+  <Step title="Transfer archive">
+    Copy `pixelmuse-config.tar.gz` to the new machine.
+  </Step>
+  
+  <Step title="Import configuration">
+    ```bash
+    # On new machine
+    tar -xzf pixelmuse-config.tar.gz -C ~/
+    
+    # Verify
+    pixelmuse account
+    ```
+  </Step>
+</Steps>
+
+<Warning>
+Do not commit `auth.json` to version control. Add it to `.gitignore` if storing config in a repository.
+</Warning>
+
+## Resetting configuration
+
+To reset to defaults:
+
+```bash
+# Remove all configuration
+rm -rf ~/.config/pixelmuse-cli ~/.local/share/pixelmuse-cli
+
+# Re-run setup
+pixelmuse setup
+```
+
+Or reset specific files:
+
+```bash
+# Reset settings only (keeps auth)
+rm ~/.config/pixelmuse-cli/config.yaml
+pixelmuse setup  # Will recreate with defaults
+
+# Reset auth only (keeps settings)
+pixelmuse logout
+pixelmuse login
+```
+
+<Card title="Authentication Guide" icon="key" href="/getting-started/authentication">
+  Learn more about authentication methods and security
+</Card>

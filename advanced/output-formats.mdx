@@ -1,0 +1,366 @@
+---
+title: Output Formats
+description: Control where and how generated images are saved — files, JSON, clipboard, and more
+---
+
+Pixelmuse CLI provides flexible output options for different workflows: saving to disk, copying to clipboard, JSON output for scripting, and in-terminal previews.
+
+## File Output
+
+### Default Behavior
+
+By default, images are saved to the current working directory with a slugified prompt name:
+
+```bash
+pixelmuse "astronaut riding a horse"
+# Saves to: ./astronaut-riding-a-horse.png
+```
+
+The filename:
+- Uses lowercase with hyphens
+- Truncates to 60 characters
+- Auto-increments if a file exists (`astronaut-riding-a-horse-2.png`)
+
+### Custom Output Path
+
+Specify an explicit path with `-o` or `--output`:
+
+```bash
+pixelmuse "app icon" -o assets/icon.png
+```
+
+Relative paths are resolved from the current directory. Parent directories must exist.
+
+### Disable Saving
+
+Skip saving entirely with `--no-save`:
+
+```bash
+pixelmuse "test prompt" --no-save --json
+```
+
+Useful when:
+- Testing prompts without cluttering your filesystem
+- Using `--json` mode and only need metadata
+- Copying directly to clipboard with `--clipboard`
+
+## Auto-Save to Generations Directory
+
+Even with custom output paths, the CLI **also** saves a copy to the generations directory:
+
+```
+~/.local/share/pixelmuse-cli/generations/<generation-id>.png
+```
+
+This enables:
+- `pixelmuse history` to show thumbnails
+- `pixelmuse open <id>` to re-open past generations
+- Local backup of all generations
+
+<Note>
+The auto-save behavior is controlled by `src/core/generate.ts:88-92` and always uses the generation ID as the filename.
+</Note>
+
+## JSON Output Mode
+
+For scripting and automation, use `--json` for machine-readable output:
+
+```bash
+pixelmuse "a cat" --json
+```
+
+Output:
+
+```json
+{
+  "id": "gen_abc123...",
+  "status": "succeeded",
+  "model": "nano-banana-2",
+  "prompt": "a cat",
+  "credits_charged": 1,
+  "visibility": "private",
+  "elapsed_seconds": 8.2,
+  "output_path": "/home/user/a-cat.png"
+}
+```
+
+### JSON Mode Behavior
+
+- **No spinners**: Suppresses all interactive UI elements
+- **No color**: Plain text for parsing
+- **Single JSON object**: One line of output
+- **Exit codes**: `0` on success, `1` on failure
+
+### Error Handling
+
+On failure, JSON mode outputs an error object:
+
+```json
+{
+  "error": "Insufficient credits"
+}
+```
+
+Exit code is `1`.
+
+## Clipboard Integration
+
+Copy the generated image directly to your system clipboard:
+
+```bash
+pixelmuse "logo design" --clipboard
+```
+
+Output:
+
+```bash
+✓ Generated in 8.2s · 1 credit charged (remaining: 99) · private
+  Saved to logo-design.png
+  Copied to clipboard
+```
+
+### Platform Support
+
+**macOS**:
+
+```bash
+osascript -e 'set the clipboard to (read (POSIX file "path.png") as TIFF picture)'
+```
+
+**Linux**:
+
+```bash
+xclip -selection clipboard -t image/png -i "path.png"
+```
+
+<Warning>
+Linux requires `xclip` to be installed. On macOS, clipboard works out of the box.
+</Warning>
+
+**Windows**: Not yet supported (clipboard feature fails silently).
+
+### Combine with --no-save
+
+Copy to clipboard without saving to disk:
+
+```bash
+pixelmuse "quick sketch" --clipboard --no-save
+```
+
+<Note>
+This still saves to the generations directory (`~/.local/share/pixelmuse-cli/generations/`) for history tracking.
+</Note>
+
+## Terminal Preview
+
+By default, images are displayed in the terminal using `chafa` (if installed):
+
+```bash
+pixelmuse "a sunset"
+# Shows inline preview
+```
+
+### Disable Preview
+
+```bash
+pixelmuse "a sunset" --no-preview
+```
+
+### Install chafa
+
+If not installed, you'll see:
+
+```
+Install chafa for terminal image preview
+```
+
+Install it:
+
+```bash
+# macOS
+brew install chafa
+
+# Ubuntu/Debian
+sudo apt install chafa
+
+# Arch
+sudo pacman -S chafa
+```
+
+## Open in System Viewer
+
+Automatically open the generated image in your default image viewer:
+
+```bash
+pixelmuse "wallpaper" --open
+```
+
+Uses the `open` package (cross-platform):
+
+- **macOS**: Preview.app or default image app
+- **Linux**: `xdg-open` with default image viewer
+- **Windows**: Default `.png` handler
+
+## Output Path Resolution
+
+The CLI resolves output paths in this order:
+
+1. **Explicit `-o` flag**: Use exactly as specified
+2. **Slugified prompt**: Generate filename from prompt text
+3. **Collision avoidance**: Append `-2`, `-3`, etc. if file exists
+
+Implementation from `src/core/generate.ts:32-46`:
+
+```typescript
+function resolveOutputPath(prompt: string, output?: string): string {
+  if (output) return resolve(output)
+
+  const base = slugify(prompt).slice(0, 60) || 'generation'
+  let filename = `${base}.png`
+  let counter = 2
+
+  while (existsSync(join(process.cwd(), filename))) {
+    filename = `${base}-${counter}.png`
+    counter++
+  }
+
+  return join(process.cwd(), filename)
+}
+```
+
+## Combining Options
+
+All output options work together:
+
+```bash
+pixelmuse "hero image" \
+  -o dist/hero.png \
+  --clipboard \
+  --open \
+  --json > metadata.json
+```
+
+This will:
+1. Save to `dist/hero.png`
+2. Copy to clipboard
+3. Open in system viewer
+4. Output JSON metadata to `metadata.json`
+
+## Example Scripts
+
+### Generate and Upload
+
+```bash
+#!/bin/bash
+output=$(pixelmuse "product photo" --json -o product.png)
+if [ $? -eq 0 ]; then
+  aws s3 cp product.png s3://my-bucket/images/
+  echo "Uploaded: $(echo $output | jq -r '.id')"
+fi
+```
+
+### Batch Generation
+
+```bash
+#!/bin/bash
+while IFS= read -r prompt; do
+  pixelmuse "$prompt" --json >> results.jsonl
+done < prompts.txt
+```
+
+### Copy to Figma Workflow
+
+```bash
+pixelmuse "UI background" --clipboard --no-preview
+# Paste directly into Figma (Cmd+V)
+```
+
+## Configuration
+
+Default output behavior can be configured in `~/.config/pixelmuse-cli/config.yaml`:
+
+```yaml
+autoPreview: true   # Show terminal preview
+autoSave: true      # Save to generations directory
+defaultVisibility: private
+```
+
+<Tip>
+Disable `autoPreview` if you're in a non-graphical terminal or use tmux/screen where inline images don't render well.
+</Tip>
+
+## Visibility Control
+
+Generated images are private by default. Make them public with `--public`:
+
+```bash
+pixelmuse "portfolio piece" --public
+```
+
+Public images:
+- Appear in your public gallery at `pixelmuse.studio/<username>`
+- Are accessible via direct URL without authentication
+- Can be embedded on websites
+
+Private images:
+- Only accessible to your account
+- Require authentication to view
+- Marked with a lock icon in `pixelmuse history`
+
+## Output Metadata
+
+When saving to disk, you can access generation metadata via `--json`:
+
+```bash
+pixelmuse "landscape" -o out.png --json > meta.json
+```
+
+`meta.json` contains:
+
+```json
+{
+  "id": "gen_abc123",
+  "model": "flux-schnell",
+  "credits_charged": 2,
+  "elapsed_seconds": 12.3,
+  "output_path": "/path/to/out.png"
+}
+```
+
+Use this to:
+- Track generation costs
+- Log performance metrics
+- Build custom workflows
+- Generate reports
+
+## Troubleshooting
+
+### "Failed to copy to clipboard"
+
+**Linux**: Install `xclip`:
+
+```bash
+sudo apt install xclip
+```
+
+**Windows**: Not yet supported. Use `--open` instead.
+
+### "Install chafa for terminal image preview"
+
+Preview is optional. Install `chafa` or use `--no-preview` to suppress the message.
+
+### Permission Denied
+
+If `-o` path fails:
+
+```bash
+pixelmuse "test" -o /protected/dir/img.png
+# Error: EACCES: permission denied
+```
+
+Ensure the parent directory exists and is writable:
+
+```bash
+mkdir -p /path/to/dir
+chmod u+w /path/to/dir
+```

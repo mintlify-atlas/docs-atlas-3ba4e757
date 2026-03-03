@@ -1,0 +1,249 @@
+---
+title: template
+description: Manage and use reusable prompt templates
+---
+
+The `template` command helps you create, manage, and use reusable prompt templates with variables and default settings.
+
+## Subcommands
+
+### list
+
+List all saved templates:
+
+```bash
+pixelmuse template list
+```
+
+Example output:
+```
+blog-thumbnail — Blog header image with customizable subject
+  tags: blog, social-media
+product-shot — Professional product photography
+  tags: ecommerce, marketing
+```
+
+### show
+
+Display details of a specific template:
+
+```bash
+pixelmuse template show <name>
+```
+
+Example:
+```bash
+$ pixelmuse template show blog-thumbnail
+
+blog-thumbnail
+Blog header image with customizable subject
+
+Prompt: A professional blog header featuring {{subject}}, 16:9 aspect ratio, modern design
+Variables: subject
+  subject = "technology"
+Model: nano-banana-pro
+Aspect: 16:9
+```
+
+### init
+
+Create a new template:
+
+```bash
+pixelmuse template init <name>
+```
+
+This creates a YAML file with a basic template structure that you can edit:
+
+```bash
+$ pixelmuse template init blog-thumbnail
+Created template: /home/user/.pixelmuse/prompts/blog-thumbnail.yaml
+Edit the YAML file to customize your template.
+```
+
+### use
+
+Generate an image using a template:
+
+```bash
+pixelmuse template use <name> [--var key=value]
+```
+
+Example:
+```bash
+pixelmuse template use blog-thumbnail --var subject="React hooks"
+```
+
+## Template Structure
+
+Templates are stored as YAML files in `~/.pixelmuse/prompts/`:
+
+```yaml
+name: blog-thumbnail
+description: Blog header image with customizable subject
+prompt: "A professional blog header featuring {{subject}}, modern design"
+variables:
+  subject: technology
+defaults:
+  model: nano-banana-pro
+  aspect_ratio: 16:9
+  style: realistic
+tags:
+  - blog
+  - social-media
+```
+
+## Variables
+
+Templates support variable interpolation using `{{variableName}}` syntax:
+
+### Defining Variables
+
+In your template YAML:
+```yaml
+prompt: "A {{style}} photo of a {{subject}} in {{location}}"
+variables:
+  style: professional
+  subject: laptop
+  location: office
+```
+
+### Using Variables
+
+Override default values with `--var` flags:
+```bash
+pixelmuse template use product-shot \
+  --var subject="smartphone" \
+  --var location="studio"
+```
+
+## Template Defaults
+
+Templates can specify default generation settings:
+
+<ParamField path="model" type="string">
+  Default model for this template (e.g., `nano-banana-pro`)
+</ParamField>
+
+<ParamField path="aspect_ratio" type="string">
+  Default aspect ratio (e.g., `16:9`, `1:1`)
+</ParamField>
+
+<ParamField path="style" type="string">
+  Default style preset (e.g., `realistic`, `anime`)
+</ParamField>
+
+These defaults are used unless you override them with command-line flags:
+
+```bash
+# Uses template's default model
+pixelmuse template use blog-thumbnail
+
+# Overrides model
+pixelmuse template use blog-thumbnail -m imagen-3
+```
+
+## Template Examples
+
+### App Icon Template
+
+```yaml
+name: app-icon
+description: Minimal app icon design
+prompt: "{{concept}} app icon, minimal, flat design, single object, centered"
+variables:
+  concept: music player
+defaults:
+  model: recraft-v4
+  aspect_ratio: 1:1
+tags:
+  - icon
+  - app
+```
+
+Usage:
+```bash
+pixelmuse template use app-icon --var concept="weather"
+```
+
+### Social Media Post Template
+
+```yaml
+name: social-post
+description: Eye-catching social media graphics
+prompt: "{{message}}, vibrant colors, attention-grabbing, social media style"
+variables:
+  message: New product launch
+defaults:
+  model: nano-banana-pro
+  aspect_ratio: 1:1
+  style: artistic
+tags:
+  - social-media
+  - marketing
+```
+
+Usage:
+```bash
+pixelmuse template use social-post --var message="Summer sale 50% off"
+```
+
+### Character Design Template
+
+```yaml
+name: character
+description: Character concept art
+prompt: "{{description}} character design, full body, white background, concept art style"
+variables:
+  description: fantasy warrior
+defaults:
+  model: nano-banana-pro
+  aspect_ratio: 9:16
+  style: artistic
+tags:
+  - character
+  - concept-art
+```
+
+Usage:
+```bash
+pixelmuse template use character --var description="cyberpunk hacker"
+```
+
+## Managing Templates
+
+### Template Location
+
+Templates are stored in:
+```
+~/.pixelmuse/prompts/<slug>.yaml
+```
+
+### Editing Templates
+
+Edit template YAML files directly:
+```bash
+# Using your preferred editor
+vim ~/.pixelmuse/prompts/blog-thumbnail.yaml
+code ~/.pixelmuse/prompts/blog-thumbnail.yaml
+```
+
+### Deleting Templates
+
+Remove the YAML file:
+```bash
+rm ~/.pixelmuse/prompts/blog-thumbnail.yaml
+```
+
+## Tips
+
+1. **Use descriptive names**: Choose names that clearly indicate the template's purpose
+2. **Add tags**: Organize templates with relevant tags for easy discovery
+3. **Set smart defaults**: Configure model and aspect ratio based on use case
+4. **Document variables**: Use clear descriptions and sensible default values
+5. **Share templates**: Templates are just YAML files—share them with your team
+
+## Related Commands
+
+- [generate](/cli/generate) - Generate without templates
+- [models](/cli/models) - View available models for defaults

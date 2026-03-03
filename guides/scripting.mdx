@@ -1,0 +1,350 @@
+---
+title: Scripting and automation
+description: Integrate Pixelmuse into scripts, pipelines, and CI/CD workflows
+---
+
+Pixelmuse is built for automation. Use stdin pipes, JSON output, watch mode, and environment variables to integrate image generation into your scripts and build processes.
+
+## JSON output mode
+
+Use `--json` for machine-readable output:
+
+```bash
+RESULT=$(pixelmuse --json "hero banner")
+echo "$RESULT" | jq .
+```
+
+Response format:
+
+```json
+{
+  "id": "gen_abc123def456",
+  "status": "succeeded",
+  "model": "nano-banana-2",
+  "prompt": "hero banner",
+  "credits_charged": 1,
+  "visibility": "private",
+  "elapsed_seconds": 2.8,
+  "output_path": "/home/user/.local/share/pixelmuse-cli/generations/gen_abc123def456.png"
+}
+```
+
+Extract the path:
+
+```bash
+PATH=$(pixelmuse --json "logo" | jq -r .output_path)
+echo "Image saved to: $PATH"
+```
+
+## Piping from stdin
+
+Read prompts from other tools:
+
+```bash
+# From a file
+cat prompt.txt | pixelmuse -o output.png
+
+# From echo
+echo "social media banner" | pixelmuse -a 16:9
+
+# From a script
+generate_prompt() {
+  echo "A $1 with $2 style"
+}
+
+generate_prompt "landscape" "watercolor" | pixelmuse -m flux-schnell
+```
+
+### Batch processing
+
+```bash
+# Generate from a list of prompts
+while IFS= read -r prompt; do
+  echo "Generating: $prompt"
+  pixelmuse "$prompt" -o "output-$(date +%s).png"
+  sleep 1  # Rate limiting
+done < prompts.txt
+```
+
+## Error handling
+
+Check exit codes:
+
+```bash
+if pixelmuse "test prompt" -o test.png; then
+  echo "Success!"
+else
+  echo "Generation failed"
+  exit 1
+fi
+```
+
+With JSON mode:
+
+```bash
+RESULT=$(pixelmuse --json "prompt")
+
+if echo "$RESULT" | jq -e .error > /dev/null; then
+  ERROR=$(echo "$RESULT" | jq -r .error)
+  echo "Error: $ERROR"
+  exit 1
+fi
+
+PATH=$(echo "$RESULT" | jq -r .output_path)
+echo "Saved to: $PATH"
+```
+
+## Environment variables
+
+Set `PIXELMUSE_API_KEY` to avoid interactive login:
+
+```bash
+export PIXELMUSE_API_KEY="pm_live_abc123..."
+pixelmuse "background image"
+```
+
+Useful for:
+- CI/CD pipelines
+- Docker containers
+- Temporary authentication
+- Switching accounts
+
+<Warning>
+Never commit API keys to version control. Use secrets management (GitHub Secrets, AWS Secrets Manager, etc.).
+</Warning>
+
+## CI/CD integration
+
+### GitHub Actions
+
+```yaml
+name: Generate Images
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  generate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '20'
+      
+      - name: Install Pixelmuse
+        run: npm install -g pixelmuse
+      
+      - name: Generate hero image
+        env:
+          PIXELMUSE_API_KEY: ${{ secrets.PIXELMUSE_API_KEY }}
+        run: |
+          pixelmuse "hero banner for SaaS landing page" \
+            -m recraft-v4 \
+            -a 16:9 \
+            -o ./public/hero.png
+      
+      - name: Commit generated images
+        run: |
+          git config user.name "GitHub Actions"
+          git config user.email "actions@github.com"
+          git add public/*.png
+          git commit -m "Update generated images" || true
+          git push
+```
+
+### GitLab CI
+
+```yaml
+image: node:20
+
+generate_images:
+  stage: build
+  script:
+    - npm install -g pixelmuse
+    - export PIXELMUSE_API_KEY="$PIXELMUSE_API_KEY"
+    - pixelmuse "social media banner" -a 16:9 -o public/banner.png
+  artifacts:
+    paths:
+      - public/*.png
+  only:
+    - main
+```
+
+### Docker
+
+```dockerfile
+FROM node:20-slim
+
+RUN npm install -g pixelmuse
+
+ENV PIXELMUSE_API_KEY=""
+
+WORKDIR /workspace
+
+CMD ["pixelmuse", "--help"]
+```
+
+Usage:
+
+```bash
+docker run -e PIXELMUSE_API_KEY="pm_live_..." \
+  -v $(pwd):/workspace \
+  pixelmuse-image \
+  pixelmuse "container banner" -o /workspace/banner.png
+```
+
+## Advanced scripting patterns
+
+### Retry logic
+
+```bash
+generate_with_retry() {
+  local prompt="$1"
+  local output="$2"
+  local max_attempts=3
+  local attempt=1
+
+  while [ $attempt -le $max_attempts ]; do
+    echo "Attempt $attempt/$max_attempts"
+    
+    if pixelmuse "$prompt" -o "$output"; then
+      echo "Success!"
+      return 0
+    fi
+    
+    attempt=$((attempt + 1))
+    sleep 2
+  done
+  
+  echo "Failed after $max_attempts attempts"
+  return 1
+}
+
+generate_with_retry "hero image" hero.png
+```
+
+### Parallel generation
+
+```bash
+#!/bin/bash
+
+prompts=("landscape" "portrait" "cityscape")
+
+for prompt in "${prompts[@]}"; do
+  (
+    echo "Generating: $prompt"
+    pixelmuse "$prompt" -o "${prompt}.png"
+  ) &
+done
+
+wait
+echo "All generations complete"
+```
+
+### Cost tracking
+
+```bash
+#!/bin/bash
+
+BALANCE_BEFORE=$(pixelmuse --json account | jq .credits_total)
+
+pixelmuse "test image" -m recraft-v4-pro -o test.png
+
+BALANCE_AFTER=$(pixelmuse --json account | jq .credits_total)
+
+COST=$((BALANCE_BEFORE - BALANCE_AFTER))
+echo "Generation cost: $COST credits"
+```
+
+### Template-based generation
+
+```bash
+#!/bin/bash
+
+# Generate blog thumbnails for multiple topics
+topics=("React hooks" "TypeScript generics" "CSS Grid")
+
+for topic in "${topics[@]}"; do
+  slug=$(echo "$topic" | tr ' ' '-' | tr '[:upper:]' '[:lower:]')
+  
+  pixelmuse template use blog-thumbnail \
+    --var subject="$topic" \
+    -o "thumbnails/${slug}.png"
+done
+```
+
+## Rate limiting
+
+Respect rate limits (60 requests/min on starter plan):
+
+```bash
+for i in {1..100}; do
+  pixelmuse "image $i" -o "output-$i.png"
+  sleep 1  # ~60 req/min
+done
+```
+
+## Combining with other tools
+
+### jq for JSON processing
+
+```bash
+# Extract all successful generation IDs
+pixelmuse --json history | jq -r '.[] | select(.status == "succeeded") | .id'
+
+# Get total credits charged today
+pixelmuse --json usage --start $(date -I) --end $(date -I) | jq .credits_used
+```
+
+### ImageMagick for post-processing
+
+```bash
+pixelmuse "logo" -o raw.png
+convert raw.png -resize 512x512 -quality 95 logo-512.png
+convert raw.png -resize 256x256 logo-256.png
+```
+
+### fzf for interactive selection
+
+```bash
+MODEL=$(pixelmuse models | fzf | awk '{print $1}')
+pixelmuse "prompt" -m "$MODEL"
+```
+
+## Makefile integration
+
+```makefile
+.PHONY: generate-assets
+
+generate-assets:
+	@echo "Generating hero image..."
+	pixelmuse "hero banner" -m recraft-v4 -a 21:9 -o public/hero.png
+	
+	@echo "Generating social cards..."
+	pixelmuse template use social-card --var title="Welcome" -o public/social-1.png
+	pixelmuse template use social-card --var title="Features" -o public/social-2.png
+
+clean:
+	rm -f public/*.png
+```
+
+## Next steps
+
+<CardGroup cols={2}>
+  <Card title="CLI reference" icon="terminal" href="/cli/flags">
+    All flags and options
+  </Card>
+  <Card title="Watch mode" icon="eye" href="/advanced/watch-mode">
+    Auto-regenerate on file changes
+  </Card>
+  <Card title="Templates" icon="file-code" href="/guides/templates">
+    Reusable prompt templates
+  </Card>
+  <Card title="Environment variables" icon="key" href="/cli/environment">
+    Authentication in scripts
+  </Card>
+</CardGroup>

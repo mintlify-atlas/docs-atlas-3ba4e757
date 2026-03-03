@@ -1,0 +1,116 @@
+---
+title: "generate_image"
+description: "Generate AI images using Pixelmuse models through MCP"
+---
+
+Generate an AI image using Pixelmuse. Returns the saved file path and generation metadata.
+
+## Input Parameters
+
+<ParamField path="prompt" type="string" required>
+  Image description / prompt. Describe what you want to generate in natural language.
+</ParamField>
+
+<ParamField path="model" type="string" default="nano-banana-2">
+  Model to use for image generation. Available models:
+  
+  - `nano-banana-2` - Fast, efficient model
+  - `nano-banana-pro` - Enhanced version of nano-banana
+  - `flux-schnell` - High-quality FLUX model
+  - `imagen-3` - Google's Imagen 3
+  - `recraft-v4` - Recraft v4 model
+  - `recraft-v4-pro` - Professional Recraft model
+</ParamField>
+
+<ParamField path="aspect_ratio" type="string" default="1:1">
+  Image aspect ratio. Available options:
+  
+  `1:1`, `16:9`, `9:16`, `3:2`, `2:3`, `4:5`, `5:4`, `3:4`, `4:3`, `21:9`, `9:21`
+</ParamField>
+
+<ParamField path="style" type="string" default="none">
+  Visual style to apply to the generated image.
+  
+  - `none` - No style modification
+  - `realistic` - Photorealistic style
+  - `anime` - Anime/manga style
+  - `artistic` - Artistic/painterly style
+</ParamField>
+
+<ParamField path="output_path" type="string">
+  Where to save the image. Defaults to current directory if not specified.
+</ParamField>
+
+<ParamField path="visibility" type="string">
+  Image visibility setting. Options: `public` or `private`. Defaults to private if not specified.
+</ParamField>
+
+## Response Fields
+
+<ResponseField name="id" type="string">
+  Unique identifier for the generation request.
+</ResponseField>
+
+<ResponseField name="status" type="string">
+  Generation status (e.g., "completed", "processing").
+</ResponseField>
+
+<ResponseField name="model" type="string">
+  The model used for generation.
+</ResponseField>
+
+<ResponseField name="prompt" type="string">
+  The prompt that was used to generate the image.
+</ResponseField>
+
+<ResponseField name="credits_charged" type="number">
+  Number of credits charged for this generation.
+</ResponseField>
+
+<ResponseField name="visibility" type="string">
+  The visibility setting of the generated image.
+</ResponseField>
+
+<ResponseField name="elapsed_seconds" type="number">
+  Time taken to generate the image in seconds.
+</ResponseField>
+
+<ResponseField name="output_path" type="string">
+  File system path where the image was saved.
+</ResponseField>
+
+## Example Request
+
+```json
+{
+  "prompt": "A serene mountain landscape at sunset with pine trees",
+  "model": "flux-schnell",
+  "aspect_ratio": "16:9",
+  "style": "realistic",
+  "output_path": "./output/mountain.png",
+  "visibility": "private"
+}
+```
+
+## Example Response
+
+```json
+{
+  "id": "gen_abc123xyz",
+  "status": "completed",
+  "model": "flux-schnell",
+  "prompt": "A serene mountain landscape at sunset with pine trees",
+  "credits_charged": 5,
+  "visibility": "private",
+  "elapsed_seconds": 3.2,
+  "output_path": "./output/mountain.png"
+}
+```
+
+## Error Handling
+
+The tool will throw an error if:
+- No API key is found in environment or stored credentials
+- Invalid model, aspect ratio, or style is specified
+- Insufficient credits in account
+- Network or API errors occur

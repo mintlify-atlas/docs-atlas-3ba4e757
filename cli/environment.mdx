@@ -1,0 +1,120 @@
+---
+title: Environment Variables
+description: Environment variables for configuring Pixelmuse CLI
+---
+
+Pixelmuse uses environment variables for authentication and configuration. These variables allow you to customize behavior without passing flags repeatedly.
+
+## Authentication
+
+<ParamField path="PIXELMUSE_API_KEY" type="string">
+  Your Pixelmuse API key for authentication. When set, this takes precedence over stored credentials.
+
+  Format: `pm_live_*` or `pm_test_*`
+
+  ```bash
+  export PIXELMUSE_API_KEY="pm_live_abc123..."
+  pixelmuse "test generation"
+  ```
+
+  This is useful for:
+  - CI/CD pipelines
+  - Docker containers
+  - Temporary authentication
+  - Testing with different accounts
+
+  <Note>
+    For interactive use, prefer `pixelmuse login` which securely stores credentials in your system keychain.
+  </Note>
+</ParamField>
+
+## Configuration
+
+While Pixelmuse doesn't currently expose configuration directories via environment variables, it follows standard XDG conventions on Linux and uses platform-specific directories on macOS and Windows.
+
+### Default Config Locations
+
+**Linux:**
+```bash
+~/.config/pixelmuse/
+```
+
+**macOS:**
+```bash
+~/Library/Application Support/pixelmuse/
+```
+
+**Windows:**
+```bash
+%APPDATA%\pixelmuse\
+```
+
+## Usage Examples
+
+### CI/CD Integration
+
+Set the API key as a secret in your CI environment:
+
+```yaml
+# .github/workflows/generate-images.yml
+env:
+  PIXELMUSE_API_KEY: ${{ secrets.PIXELMUSE_API_KEY }}
+
+steps:
+  - name: Generate hero image
+    run: pixelmuse "hero banner" -o public/hero.png --json
+```
+
+### Docker Container
+
+Pass the API key when running a container:
+
+```bash
+docker run -e PIXELMUSE_API_KEY="pm_live_abc123..." \
+  your-image:latest \
+  pixelmuse "background texture" -o /output/bg.png
+```
+
+### Temporary Override
+
+Override stored credentials for a single command:
+
+```bash
+PIXELMUSE_API_KEY="pm_test_xyz789..." pixelmuse "test image" --json
+```
+
+### Shell Configuration
+
+Add to your `~/.bashrc` or `~/.zshrc` for permanent availability:
+
+```bash
+export PIXELMUSE_API_KEY="pm_live_abc123..."
+```
+
+## Security Best Practices
+
+<Warning>
+  Never commit API keys to version control. Use environment variables or secure secret management.
+</Warning>
+
+1. **Use `.env` files** for local development (add to `.gitignore`)
+2. **Use secret managers** in production (AWS Secrets Manager, HashiCorp Vault, etc.)
+3. **Rotate keys regularly** through the Pixelmuse dashboard
+4. **Use test keys** (`pm_test_*`) for development
+5. **Restrict key permissions** to minimum required scope
+
+## Verification
+
+Check if your environment variable is set correctly:
+
+```bash
+echo $PIXELMUSE_API_KEY
+```
+
+Test authentication:
+
+```bash
+pixelmuse account
+```
+
+This will display your account information if authentication is successful.

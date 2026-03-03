@@ -1,0 +1,135 @@
+---
+title: Claude Code Integration
+description: Set up Pixelmuse MCP server in Claude Code for AI-powered image generation
+---
+
+# Claude Code Integration
+
+Integrate Pixelmuse with Claude Code to enable AI-powered image generation directly from your conversations.
+
+## Prerequisites
+
+- Node.js 20 or higher installed
+- Claude Code installed on your system
+- A Pixelmuse API key (get one at [pixelmuse.studio/settings/api-keys](https://pixelmuse.studio/settings/api-keys))
+
+## Configuration
+
+<Steps>
+  <Step title="Locate your Claude Code config file">
+    The MCP configuration file is located at:
+    
+    ```bash
+    ~/.claude/mcp.json
+    ```
+  </Step>
+
+  <Step title="Add Pixelmuse MCP server">
+    Add the following configuration to your `mcp.json` file:
+
+    ```json
+    {
+      "mcpServers": {
+        "pixelmuse": {
+          "command": "npx",
+          "args": ["-y", "pixelmuse-mcp"],
+          "env": {
+            "PIXELMUSE_API_KEY": "pm_live_your_key_here"
+          }
+        }
+      }
+    }
+    ```
+
+    Replace `pm_live_your_key_here` with your actual Pixelmuse API key.
+  </Step>
+
+  <Step title="Restart Claude Code">
+    Restart Claude Code for the changes to take effect. The MCP server will automatically start when Claude Code launches.
+  </Step>
+</Steps>
+
+## Quick Setup
+
+You can also use the Pixelmuse CLI's interactive setup wizard:
+
+```bash
+npm install -g pixelmuse
+pixelmuse setup
+```
+
+The setup wizard will automatically configure Claude Code (and other supported editors) for you.
+
+## Available Tools
+
+Once configured, Claude Code has access to three Pixelmuse tools:
+
+| Tool | Description |
+|------|-------------|
+| `generate_image` | Generate an image from a prompt with model, aspect ratio, style, and output path |
+| `list_models` | List all available models with credit costs |
+| `check_balance` | Check your credit balance and plan info |
+
+## Example Prompts
+
+Try these prompts with Claude Code to test the integration:
+
+<CodeGroup>
+
+```text Hero Image
+Generate a hero image for my landing page, 16:9, save to ./public/hero.png
+```
+
+```text Blog Thumbnail
+Create a blog thumbnail about React hooks using the anime style
+```
+
+```text Model List
+What Pixelmuse models are available?
+```
+
+```text Check Balance
+How many Pixelmuse credits do I have left?
+```
+
+</CodeGroup>
+
+## Configuration Path
+
+| Path | Description |
+|------|-------------|
+| `~/.claude/mcp.json` | Claude Code MCP server configuration |
+
+## Troubleshooting
+
+<AccordionGroup>
+  <Accordion title="MCP server not connecting">
+    - Verify your API key is correct and starts with `pm_live_`
+    - Ensure Node.js 20+ is installed: `node --version`
+    - Check that the config file has valid JSON syntax
+    - Restart Claude Code completely
+  </Accordion>
+
+  <Accordion title="API key not working">
+    - Get a new API key from [pixelmuse.studio/settings/api-keys](https://pixelmuse.studio/settings/api-keys)
+    - Make sure you're using the production key (starts with `pm_live_`, not `pm_test_`)
+    - Verify the key is properly quoted in the JSON configuration
+  </Accordion>
+
+  <Accordion title="npx command fails">
+    - Ensure you have npm installed: `npm --version`
+    - Try installing the package globally first: `npm install -g pixelmuse-mcp`
+    - Then update the config to use `"command": "pixelmuse-mcp"` instead of npx
+  </Accordion>
+</AccordionGroup>
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card title="Available Models" icon="palette" href="/models">
+    Explore all available image generation models
+  </Card>
+  <Card title="MCP Tools Reference" icon="wrench" href="/mcp/tools">
+    Complete reference for all MCP server tools
+  </Card>
+</CardGroup>

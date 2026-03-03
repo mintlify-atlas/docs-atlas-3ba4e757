@@ -1,0 +1,144 @@
+---
+title: Windsurf Integration
+description: Set up Pixelmuse MCP server in Windsurf for AI-powered image generation
+---
+
+# Windsurf Integration
+
+Integrate Pixelmuse with Windsurf to enable AI-powered image generation directly from your editor.
+
+## Prerequisites
+
+- Node.js 20 or higher installed
+- Windsurf editor installed on your system
+- A Pixelmuse API key (get one at [pixelmuse.studio/settings/api-keys](https://pixelmuse.studio/settings/api-keys))
+
+## Configuration
+
+<Steps>
+  <Step title="Locate your Windsurf config file">
+    The MCP configuration file is located at:
+    
+    ```bash
+    ~/.codeium/windsurf/mcp_config.json
+    ```
+  </Step>
+
+  <Step title="Add Pixelmuse MCP server">
+    Add the following configuration to your `mcp_config.json` file:
+
+    ```json
+    {
+      "pixelmuse": {
+        "command": "npx",
+        "args": ["-y", "pixelmuse-mcp"],
+        "env": {
+          "PIXELMUSE_API_KEY": "pm_live_your_key_here"
+        }
+      }
+    }
+    ```
+
+    Replace `pm_live_your_key_here` with your actual Pixelmuse API key.
+
+    <Note>
+      Windsurf uses a flat structure (no `mcpServers` wrapper) and the file is named `mcp_config.json` (with underscore).
+    </Note>
+  </Step>
+
+  <Step title="Restart Windsurf">
+    Restart Windsurf for the changes to take effect. The MCP server will automatically start when Windsurf launches.
+  </Step>
+</Steps>
+
+## Quick Setup
+
+You can also use the Pixelmuse CLI's interactive setup wizard:
+
+```bash
+npm install -g pixelmuse
+pixelmuse setup
+```
+
+The setup wizard will automatically configure Windsurf (and other supported editors) for you.
+
+## Available Tools
+
+Once configured, Windsurf has access to three Pixelmuse tools:
+
+| Tool | Description |
+|------|-------------|
+| `generate_image` | Generate an image from a prompt with model, aspect ratio, style, and output path |
+| `list_models` | List all available models with credit costs |
+| `check_balance` | Check your credit balance and plan info |
+
+## Example Prompts
+
+Try these prompts with Windsurf to test the integration:
+
+<CodeGroup>
+
+```text Landing Page
+Generate a hero image for my landing page, 16:9, save to ./public/hero.png
+```
+
+```text Social Media
+Create a social media post about TypeScript best practices, 1:1 aspect ratio
+```
+
+```text List Models
+Show me all available Pixelmuse models
+```
+
+```text Account Info
+What's my current Pixelmuse credit balance?
+```
+
+</CodeGroup>
+
+## Configuration Path
+
+| Path | Description |
+|------|-------------|
+| `~/.codeium/windsurf/mcp_config.json` | Windsurf MCP server configuration |
+
+## Troubleshooting
+
+<AccordionGroup>
+  <Accordion title="MCP server not connecting">
+    - Verify your API key is correct and starts with `pm_live_`
+    - Ensure Node.js 20+ is installed: `node --version`
+    - Check that the config file has valid JSON syntax
+    - Restart Windsurf completely
+  </Accordion>
+
+  <Accordion title="API key not working">
+    - Get a new API key from [pixelmuse.studio/settings/api-keys](https://pixelmuse.studio/settings/api-keys)
+    - Make sure you're using the production key (starts with `pm_live_`, not `pm_test_`)
+    - Verify the key is properly quoted in the JSON configuration
+  </Accordion>
+
+  <Accordion title="npx command fails">
+    - Ensure you have npm installed: `npm --version`
+    - Try installing the package globally first: `npm install -g pixelmuse-mcp`
+    - Then update the config to use `"command": "pixelmuse-mcp"` instead of npx
+  </Accordion>
+
+  <Accordion title="Config file not found">
+    - The directory structure is `~/.codeium/windsurf/`
+    - The file name is `mcp_config.json` (with underscore, not hyphen)
+    - You may need to create the file manually if it doesn't exist
+    - Ensure the parent directories exist: `mkdir -p ~/.codeium/windsurf`
+  </Accordion>
+</AccordionGroup>
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card title="Available Models" icon="palette" href="/models">
+    Explore all available image generation models
+  </Card>
+  <Card title="MCP Tools Reference" icon="wrench" href="/mcp/tools">
+    Complete reference for all MCP server tools
+  </Card>
+</CardGroup>

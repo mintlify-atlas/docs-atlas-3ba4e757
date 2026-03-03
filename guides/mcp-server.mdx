@@ -1,0 +1,193 @@
+---
+title: MCP server
+description: Enable AI agents to generate images using the Model Context Protocol
+---
+
+The Pixelmuse MCP server lets AI agents (like Claude, Cursor, and Windsurf) generate images, list models, and check your balance without manual CLI steps. It uses the [Model Context Protocol](https://modelcontextprotocol.io) to expose three tools.
+
+## What is MCP?
+
+The Model Context Protocol (MCP) is a standard for AI agents to interact with external tools and data sources. Pixelmuse implements an MCP server that provides image generation capabilities to compatible AI clients.
+
+## Available tools
+
+The MCP server exposes three tools:
+
+| Tool | Description |
+|------|-------------|
+| `generate_image` | Generate an image from a prompt with model, aspect ratio, style, and output path |
+| `list_models` | List all available models with credit costs and capabilities |
+| `check_balance` | Check your credit balance and plan info |
+
+See the [MCP Reference](/mcp/overview) for detailed tool documentation.
+
+## Setup
+
+The MCP server is installed automatically with the Pixelmuse CLI. The binary is `pixelmuse-mcp`.
+
+### Quick setup with the wizard
+
+The easiest way to configure MCP is during setup:
+
+```bash
+pixelmuse setup
+```
+
+The wizard will:
+1. Authenticate you (if not already logged in)
+2. Detect installed AI editors (Claude Desktop, Cursor, Windsurf)
+3. Offer to configure MCP for each detected editor
+4. Write the configuration files automatically
+
+### Manual configuration
+
+If you prefer manual setup, follow the guides for your editor:
+
+<CardGroup cols={3}>
+  <Card title="Claude Code" icon="message" href="/mcp/claude-code">
+    Configure for Claude Desktop
+  </Card>
+  <Card title="Cursor" icon="code" href="/mcp/cursor">
+    Configure for Cursor IDE
+  </Card>
+  <Card title="Windsurf" icon="wind" href="/mcp/windsurf">
+    Configure for Windsurf
+  </Card>
+</CardGroup>
+
+## Example usage
+
+Once configured, you can ask your AI agent to generate images:
+
+### Generate an image
+
+> "Generate a hero image for my landing page, 16:9 aspect ratio, save it to `./public/hero.png`"
+
+The agent will:
+1. Call `generate_image` with appropriate parameters
+2. Wait for generation to complete
+3. Return the file path and metadata
+
+### Check available models
+
+> "What Pixelmuse models are available?"
+
+The agent calls `list_models` and shows you a formatted list with costs and capabilities.
+
+### Check your balance
+
+> "How many Pixelmuse credits do I have left?"
+
+The agent calls `check_balance` and reports your remaining credits.
+
+### Complex workflows
+
+> "Create three social media images: one for Twitter (16:9), one for Instagram (1:1), and one for Stories (9:16). Use the recraft-v4 model and save them to the `./social/` directory."
+
+The agent will:
+1. Call `generate_image` three times with different aspect ratios
+2. Save each to the specified directory
+3. Report the results
+
+## Authentication
+
+The MCP server requires authentication. You can provide your API key in two ways:
+
+### 1. Environment variable (recommended)
+
+Set `PIXELMUSE_API_KEY` in the MCP configuration:
+
+```json
+{
+  "pixelmuse": {
+    "command": "npx",
+    "args": ["-y", "pixelmuse-mcp"],
+    "env": {
+      "PIXELMUSE_API_KEY": "pm_live_your_key_here"
+    }
+  }
+}
+```
+
+### 2. Stored credentials
+
+If you've run `pixelmuse login`, the MCP server will use your stored credentials from the OS keychain or config file.
+
+<Note>
+Environment variables take precedence over stored credentials.
+</Note>
+
+## Configuration locations
+
+MCP configuration files are stored at:
+
+- **Claude Code**: `~/.claude/mcp.json` (or `~/.claude/.mcp.json`)
+- **Cursor**: `~/.cursor/mcp.json`
+- **Windsurf**: `~/.codeium/windsurf/mcp_config.json`
+
+## How it works
+
+The MCP server:
+
+1. Runs as a subprocess launched by the AI editor
+2. Communicates via stdio (standard input/output)
+3. Accepts tool calls in the MCP protocol format
+4. Calls the Pixelmuse API to generate images
+5. Returns results to the AI agent
+6. Shuts down when the AI editor closes
+
+Implementation: `src/mcp/server.ts`
+
+## Troubleshooting
+
+<Accordion title="Agent doesn't see Pixelmuse tools">
+1. Verify the MCP configuration file exists at the correct path
+2. Restart your AI editor after adding the configuration
+3. Check that `npx` is available in your PATH
+4. Try running `npx -y pixelmuse-mcp` manually to test the server
+</Accordion>
+
+<Accordion title="Authentication errors">
+1. Ensure `PIXELMUSE_API_KEY` is set in the MCP config
+2. Verify the API key format starts with `pm_live_` or `pm_test_`
+3. Check your API key at https://www.pixelmuse.studio/settings/api-keys
+4. Try running `pixelmuse login` in your terminal
+</Accordion>
+
+<Accordion title="Generation fails with 'insufficient credits'">
+Check your balance with `pixelmuse account` or ask the AI agent to run `check_balance`.
+</Accordion>
+
+<Accordion title="npx command not found">
+Install Node.js 20+ and ensure `npx` is in your PATH. On macOS/Linux:
+```bash
+which npx  # Should return a path
+```
+</Accordion>
+
+## Comparison: MCP vs. CLI
+
+| Feature | MCP Server | CLI |
+|---------|------------|-----|
+| **Use case** | AI agents generate images autonomously | You explicitly run commands |
+| **Input** | Natural language to AI → tool calls | Direct flags and prompts |
+| **Output** | AI interprets results | You see CLI output |
+| **Workflow** | Conversational, multi-step | Imperative, single commands |
+| **Best for** | Delegating to AI, complex tasks | Scripting, automation, control |
+
+## Next steps
+
+<CardGroup cols={2}>
+  <Card title="MCP tools" icon="wrench" href="/mcp/generate-image">
+    Detailed tool documentation
+  </Card>
+  <Card title="CLI usage" icon="terminal" href="/guides/cli-usage">
+    Use the CLI directly
+  </Card>
+  <Card title="Models" icon="microchip" href="/concepts/models">
+    Understand available models
+  </Card>
+  <Card title="Prompts" icon="wand-magic-sparkles" href="/concepts/prompts">
+    Prompting best practices
+  </Card>
+</CardGroup>

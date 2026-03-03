@@ -1,0 +1,190 @@
+---
+title: login & logout
+description: Authenticate and manage your Pixelmuse account credentials
+---
+
+The `login` and `logout` commands manage authentication for the Pixelmuse CLI.
+
+## login
+
+Authenticate your Pixelmuse account to start generating images.
+
+### Usage
+
+```bash
+pixelmuse login
+```
+
+### Device Flow (Recommended)
+
+The default login method uses OAuth device flow:
+
+1. CLI initiates authentication and generates a code
+2. Browser opens to activation page
+3. Enter the code to authorize
+4. CLI polls for completion
+5. API key is saved securely
+
+Example:
+```bash
+$ pixelmuse login
+
+Pixelmuse Login
+
+  Your code: ABCD-1234
+
+  Opening https://pixelmuse.studio/activate?code=ABCD-1234
+  Or visit https://pixelmuse.studio/activate and enter the code manually
+
+⠋ Waiting for authorization...
+
+✓ Authenticated as user@example.com (100 credits)
+```
+
+### Manual API Key Entry
+
+If device flow fails or is unavailable, the CLI falls back to manual entry:
+
+```bash
+Browser login unavailable. Enter your API key manually.
+
+  Get your key at: https://www.pixelmuse.studio/settings/api-keys
+
+API key: pm_live_********************************
+✓ Authenticated as user@example.com (100 credits)
+```
+
+### Getting an API Key
+
+1. Visit [Pixelmuse Settings](https://www.pixelmuse.studio/settings/api-keys)
+2. Click "Create New Key"
+3. Copy the key (starts with `pm_live_` or `pm_test_`)
+4. Paste when prompted
+
+### Key Format
+
+Valid API keys must:
+- Start with `pm_live_` (production) or `pm_test_` (test mode)
+- Be the correct length and format
+
+Invalid format error:
+```bash
+Invalid key format. Keys start with pm_live_ or pm_test_
+```
+
+### Storage Location
+
+API keys are securely stored at:
+- **macOS/Linux**: `~/.pixelmuse/credentials.json`
+- **Windows**: `%USERPROFILE%\.pixelmuse\credentials.json`
+
+Permissions are set to be readable only by your user account.
+
+### Re-authentication
+
+If your stored credentials become invalid:
+
+```bash
+$ pixelmuse account
+Not authenticated. Run: pixelmuse login
+```
+
+Simply run `pixelmuse login` again to re-authenticate.
+
+## logout
+
+Remove stored credentials from your local machine.
+
+### Usage
+
+```bash
+pixelmuse logout
+```
+
+Example:
+```bash
+$ pixelmuse logout
+Logged out.
+```
+
+This:
+- Deletes your stored API key
+- Does NOT revoke the key on the server
+- Requires re-authentication for future commands
+
+### Revoking API Keys
+
+To fully revoke an API key (recommended before logout):
+
+1. Visit [Pixelmuse Settings](https://www.pixelmuse.studio/settings/api-keys)
+2. Find the key you want to revoke
+3. Click "Revoke" or "Delete"
+4. Run `pixelmuse logout` locally
+
+This ensures the key cannot be used even if the local file is compromised.
+
+## Security Best Practices
+
+### Protect Your API Key
+
+- Never share your API key
+- Don't commit keys to version control
+- Revoke keys if compromised
+- Use test keys (`pm_test_`) for development
+
+### Multiple Machines
+
+You can:
+- Create separate API keys for each machine
+- Name keys descriptively ("MacBook Pro", "Work Desktop")
+- Revoke individual keys without affecting others
+
+### Test vs Live Keys
+
+- **Test keys** (`pm_test_`): For development and testing
+- **Live keys** (`pm_live_`): For production use
+
+Test mode:
+- Uses test credits (not real balance)
+- May have different rate limits
+- Perfect for CI/CD and development
+
+## Troubleshooting
+
+### Device flow timeout
+
+```bash
+Login timed out or was denied
+```
+
+Solutions:
+- Try again with `pixelmuse login`
+- Use manual API key entry when prompted
+- Check your internet connection
+
+### Invalid credentials after login
+
+```bash
+Authentication failed
+```
+
+Solutions:
+- Verify you copied the entire API key
+- Check for extra spaces or characters
+- Generate a new key in settings
+- Ensure your account is active
+
+### Permission denied on credentials file
+
+On Linux/macOS:
+```bash
+chmod 600 ~/.pixelmuse/credentials.json
+```
+
+This ensures only your user can read the file.
+
+## Related Commands
+
+- [setup](/cli/setup) - First-time setup (includes login)
+- [account](/cli/account) - Verify authentication and view account
+- [models](/cli/models) - Commands requiring authentication

@@ -1,0 +1,260 @@
+---
+title: Installation
+description: Install Pixelmuse CLI via npm, Homebrew, or your preferred package manager
+---
+
+## Install with npm
+
+The recommended way to install Pixelmuse is globally via npm:
+
+```bash
+npm install -g pixelmuse
+```
+
+This installs both the `pixelmuse` CLI and `pixelmuse-mcp` server executable.
+
+<Note>
+  **Node.js 20 or higher** is required. Check your version with `node --version`.
+</Note>
+
+## Alternative Package Managers
+
+<CodeGroup>
+```bash npm
+npm install -g pixelmuse
+```
+
+```bash yarn
+yarn global add pixelmuse
+```
+
+```bash pnpm
+pnpm add -g pixelmuse
+```
+
+```bash bun
+bun add -g pixelmuse
+```
+</CodeGroup>
+
+## Homebrew (Coming Soon)
+
+<Warning>
+  Homebrew tap is not yet available. Use npm for now.
+</Warning>
+
+```bash
+# Coming soon
+brew install pixelmuse/tap/pixelmuse
+```
+
+## Verify Installation
+
+Confirm the CLI is installed correctly:
+
+```bash
+pixelmuse --version
+```
+
+You should see output like:
+
+```
+0.4.0
+```
+
+## System Requirements
+
+<Steps>
+  <Step title="Node.js 20+">
+    Download from [nodejs.org](https://nodejs.org) or use a version manager like [nvm](https://github.com/nvm-sh/nvm):
+    
+    ```bash
+    nvm install 20
+    nvm use 20
+    ```
+  </Step>
+  
+  <Step title="Terminal Image Preview (Optional)">
+    For inline image previews in your terminal, install [chafa](https://hpjansson.org/chafa/):
+    
+    <CodeGroup>
+    ```bash macOS
+    brew install chafa
+    ```
+    
+    ```bash Ubuntu/Debian
+    sudo apt install chafa
+    ```
+    
+    ```bash Fedora
+    sudo dnf install chafa
+    ```
+    
+    ```bash Arch Linux
+    sudo pacman -S chafa
+    ```
+    </CodeGroup>
+    
+    <Note>
+      Without chafa, images will still be saved to disk — you just won't see them rendered in the terminal.
+    </Note>
+  </Step>
+  
+  <Step title="Clipboard Support (Optional)">
+    To use the `--clipboard` flag for copying images:
+    
+    - **macOS**: Built-in support via `osascript`
+    - **Linux**: Install `xclip`:
+      ```bash
+      sudo apt install xclip  # Ubuntu/Debian
+      sudo dnf install xclip  # Fedora
+      ```
+  </Step>
+</Steps>
+
+## Development Installation
+
+If you want to contribute or run from source:
+
+<Steps>
+  <Step title="Clone the repository">
+    ```bash
+    git clone https://github.com/starmorph/pixelmuse-cli.git
+    cd pixelmuse-cli
+    ```
+  </Step>
+  
+  <Step title="Install dependencies">
+    ```bash
+    pnpm install
+    ```
+    
+    <Note>
+      The project uses pnpm. Install it with `npm install -g pnpm` if you don't have it.
+    </Note>
+  </Step>
+  
+  <Step title="Build the project">
+    ```bash
+    pnpm build
+    ```
+  </Step>
+  
+  <Step title="Link globally">
+    ```bash
+    npm link
+    ```
+    
+    Now you can use `pixelmuse` and `pixelmuse-mcp` commands globally, pointing to your local build.
+  </Step>
+</Steps>
+
+## Updating
+
+To update to the latest version:
+
+<CodeGroup>
+```bash npm
+npm update -g pixelmuse
+```
+
+```bash yarn
+yarn global upgrade pixelmuse
+```
+
+```bash pnpm
+pnpm update -g pixelmuse
+```
+</CodeGroup>
+
+Check the installed version:
+
+```bash
+pixelmuse --version
+```
+
+## Uninstalling
+
+To remove Pixelmuse:
+
+<CodeGroup>
+```bash npm
+npm uninstall -g pixelmuse
+```
+
+```bash yarn
+yarn global remove pixelmuse
+```
+
+```bash pnpm
+pnpm remove -g pixelmuse
+```
+</CodeGroup>
+
+This removes the CLI but keeps your configuration files. To completely remove all data:
+
+```bash
+rm -rf ~/.config/pixelmuse-cli
+rm -rf ~/.local/share/pixelmuse-cli
+```
+
+<Warning>
+  This will delete your API key, settings, prompt templates, and saved generations. Export any data you want to keep first.
+</Warning>
+
+## Troubleshooting
+
+### Permission Errors on npm Install
+
+If you get `EACCES` permission errors:
+
+```bash
+# Use a Node version manager (recommended)
+nvm install 20
+nvm use 20
+npm install -g pixelmuse
+
+# Or configure npm to use a different directory
+mkdir ~/.npm-global
+npm config set prefix '~/.npm-global'
+export PATH=~/.npm-global/bin:$PATH
+npm install -g pixelmuse
+```
+
+### Command Not Found
+
+If `pixelmuse` is not found after installation:
+
+1. Check your npm global bin path:
+   ```bash
+   npm config get prefix
+   ```
+
+2. Add it to your PATH in `~/.bashrc`, `~/.zshrc`, or equivalent:
+   ```bash
+   export PATH="$(npm config get prefix)/bin:$PATH"
+   ```
+
+3. Reload your shell:
+   ```bash
+   source ~/.bashrc  # or ~/.zshrc
+   ```
+
+### Node Version Too Old
+
+If you see an error about Node.js version:
+
+```bash
+# Install Node.js 20 with nvm
+curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.0/install.sh | bash
+source ~/.bashrc
+nvm install 20
+nvm use 20
+nvm alias default 20
+```
+
+## Next Steps
+
+<Card title="Run the Setup Wizard" icon="wand-magic-sparkles" href="/quickstart">
+  Complete first-time setup and generate your first image
+</Card>

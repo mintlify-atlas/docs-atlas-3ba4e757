@@ -1,0 +1,143 @@
+---
+title: generate
+description: Generate images from text prompts (default command)
+---
+
+The `generate` command creates AI images from text prompts. This is the default command, so you can omit "generate" and just provide the prompt directly.
+
+## Usage
+
+```bash
+pixelmuse "prompt"
+pixelmuse generate "prompt"
+echo "prompt" | pixelmuse
+```
+
+## Options
+
+<ParamField path="-m, --model" type="string" default="nano-banana-2">
+  Model ID to use for generation. See [models command](/cli/models) for available options.
+</ParamField>
+
+<ParamField path="-a, --aspect-ratio" type="string" default="1:1">
+  Aspect ratio for the generated image. Available options: `1:1`, `16:9`, `9:16`, `4:3`, `3:4`, `21:9`
+</ParamField>
+
+<ParamField path="-s, --style" type="string">
+  Image style. Options: `realistic`, `anime`, `artistic`, `none`
+</ParamField>
+
+<ParamField path="-o, --output" type="string">
+  Output file path to save the image
+</ParamField>
+
+<ParamField path="--json" type="boolean" default="false">
+  Output machine-readable JSON instead of interactive mode
+</ParamField>
+
+<ParamField path="--no-preview" type="boolean">
+  Skip terminal image preview (requires chafa)
+</ParamField>
+
+<ParamField path="--open" type="boolean" default="false">
+  Open result in system image viewer after generation
+</ParamField>
+
+<ParamField path="--watch" type="string">
+  Watch a prompt file and regenerate on save. See [Watch Mode](#watch-mode) below.
+</ParamField>
+
+<ParamField path="--public" type="boolean" default="false">
+  Make image public (default: private)
+</ParamField>
+
+<ParamField path="--no-save" type="boolean">
+  Don't save image to disk
+</ParamField>
+
+<ParamField path="--clipboard" type="boolean" default="false">
+  Copy image to clipboard after generation (macOS/Linux)
+</ParamField>
+
+## Examples
+
+### Basic generation
+
+```bash
+pixelmuse "astronaut riding a horse"
+```
+
+### Save to specific path with custom model
+
+```bash
+pixelmuse "app icon, minimal" -a 1:1 -o icon.png -m nano-banana-pro
+```
+
+### Generate with specific style
+
+```bash
+pixelmuse "mountain landscape" -s realistic -a 16:9
+```
+
+### Use pipe input
+
+```bash
+echo "futuristic city" | pixelmuse -o city.png
+```
+
+### JSON output for scripting
+
+```bash
+pixelmuse --json "cosmic nebula"
+```
+
+Output:
+```json
+{
+  "id": "gen_abc123...",
+  "status": "succeeded",
+  "model": "nano-banana-2",
+  "prompt": "cosmic nebula",
+  "credits_charged": 1,
+  "visibility": "private",
+  "elapsed_seconds": 3.2,
+  "output_path": "/path/to/output.png"
+}
+```
+
+## Watch Mode
+
+Watch a file for changes and automatically regenerate when it's saved:
+
+```bash
+pixelmuse --watch prompt.txt -o output.png
+```
+
+This will:
+1. Read the prompt from `prompt.txt`
+2. Generate the image immediately
+3. Watch the file for changes
+4. Regenerate automatically when you save changes
+5. Continue until you press Ctrl+C
+
+## Interactive Output
+
+In interactive mode (default), you'll see:
+- Model name and credit cost
+- Current balance and remaining credits
+- Generation progress with elapsed time
+- Terminal preview (if chafa is installed)
+- File save location
+- Visibility status (public/private)
+
+Example:
+```
+✔ Generated in 3.2s · 1 credit charged (remaining: 99) · private
+  Saved to /home/user/.pixelmuse/generations/output.png
+```
+
+## Related Commands
+
+- [models](/cli/models) - List available models and costs
+- [template](/cli/template) - Use prompt templates
+- [history](/cli/history) - View recent generations

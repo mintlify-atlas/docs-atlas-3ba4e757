@@ -1,0 +1,127 @@
+---
+title: ui
+description: Launch the interactive terminal user interface
+---
+
+The `ui` command launches Pixelmuse's interactive TUI (Terminal User Interface) for a visual, menu-driven experience.
+
+## Usage
+
+```bash
+pixelmuse ui
+```
+
+## What is the TUI?
+
+The TUI provides an alternative to the command-line interface with:
+
+- **Visual interface**: Navigate with arrow keys and keyboard shortcuts
+- **Interactive prompts**: Build prompts with guided inputs
+- **Live preview**: See generation progress and results in real-time
+- **Settings management**: Adjust model, aspect ratio, and style visually
+- **History browsing**: View and manage past generations
+- **Template management**: Browse and use templates interactively
+
+## When to use the TUI
+
+**Use the TUI when you want to:**
+- Explore Pixelmuse features interactively
+- Quickly iterate on prompts with visual feedback
+- Browse templates and history visually
+- Avoid memorizing CLI flags and options
+
+**Use the CLI when you want to:**
+- Automate with scripts
+- Integrate with other tools via pipes
+- Use keyboard-driven workflows
+- Work with watch mode or batch operations
+
+## Navigation
+
+The TUI uses keyboard controls:
+
+- **Arrow keys**: Navigate menus and options
+- **Enter**: Select or confirm
+- **Tab**: Switch between sections
+- **Esc**: Go back or cancel
+- **Ctrl+C**: Exit TUI
+
+## Features
+
+### Generation Workflow
+
+1. Enter your prompt in the text input
+2. Select model from visual list
+3. Choose aspect ratio and style
+4. Hit "Generate" to create
+5. View progress with live spinner
+6. Preview result in terminal
+
+### Template Browser
+
+- Browse all available templates
+- Preview template details and variables
+- Fill in variable values with guided inputs
+- Generate directly from template view
+
+### History View
+
+- Scroll through recent generations
+- View full prompts and metadata
+- Re-open previous generations
+- Filter by model or status
+
+### Settings Panel
+
+- Change default model
+- Set preferred aspect ratio
+- Configure style presets
+- Adjust privacy settings
+
+## Authentication Required
+
+The TUI requires authentication. If not logged in, you'll be prompted to run:
+
+```bash
+pixelmuse login
+```
+
+## Terminal Requirements
+
+For the best experience:
+
+- **Terminal size**: At least 80x24 characters
+- **Color support**: 256-color or better terminal
+- **Image preview**: Install [chafa](https://hpjansson.org/chafa/) for inline images
+- **Modern terminal**: iTerm2, Alacritty, or Windows Terminal recommended
+
+## Exiting the TUI
+
+Press `Ctrl+C` or `q` to exit the TUI and return to your shell.
+
+## Combining CLI and TUI
+
+You can freely switch between CLI and TUI:
+
+```bash
+# Generate via CLI
+pixelmuse "space station"
+
+# Launch TUI to browse history
+pixelmuse ui
+
+# Back to CLI for scripting
+pixelmuse --json "nebula" > result.json
+```
+
+Both interfaces share the same:
+- Authentication
+- Settings and defaults
+- Generation history
+- Saved templates
+
+## Related Commands
+
+- [setup](/cli/setup) - Configure Pixelmuse before using TUI
+- [generate](/cli/generate) - CLI alternative for generation
+- [template](/cli/template) - Manage templates (CLI version)

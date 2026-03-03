@@ -1,0 +1,155 @@
+---
+title: Watch Mode
+description: Automatically regenerate images when your prompt file changes
+---
+
+Watch mode monitors a text file and automatically regenerates your image whenever the file is saved. This is perfect for iterating on prompts without re-running commands.
+
+## Basic Usage
+
+Watch a prompt file and regenerate on each save:
+
+```bash
+pixelmuse --watch prompt.txt -o output.png
+```
+
+The CLI will:
+1. Generate an image from the initial prompt
+2. Monitor the file for changes (polling every 500ms)
+3. Regenerate automatically when you save the file
+4. Continue watching until you press `Ctrl+C`
+
+## How It Works
+
+Watch mode uses Node's `watchFile` function with a 500ms polling interval. Each time the file changes, it:
+
+- Reads the updated prompt from the file
+- Skips generation if the file is empty
+- Uses the same model, aspect ratio, and style settings
+- Displays a timestamped status for each generation
+- Prevents concurrent generations (waits for current generation to complete)
+
+<Note>
+If a generation is in progress when the file changes, the change is ignored. Save again after the current generation completes.
+</Note>
+
+## With Options
+
+All standard generation options work with watch mode:
+
+```bash
+# Watch with specific model and aspect ratio
+pixelmuse --watch prompt.txt -o hero.png -m flux-schnell -a 16:9
+
+# Watch with style preset
+pixelmuse --watch prompt.txt -o artwork.png -s artistic
+
+# Watch with public visibility
+pixelmuse --watch prompt.txt --public
+```
+
+## Configuration
+
+Watch mode respects your default settings from `~/.config/pixelmuse-cli/config.yaml`:
+
+```yaml
+defaultModel: nano-banana-2
+defaultAspectRatio: 1:1
+defaultStyle: none
+defaultVisibility: private
+```
+
+Command-line flags override these defaults.
+
+## Output Format
+
+Each generation displays a timestamped status:
+
+```bash
+Watching /path/to/prompt.txt for changes... (Ctrl+C to stop)
+✔ [14:23:45] Saved to output.png (8.2s)
+✔ [14:24:12] Saved to output.png (7.9s)
+✔ [14:25:03] Saved to output.png (8.1s)
+```
+
+Timestamps use 24-hour format with seconds.
+
+## Error Handling
+
+If a generation fails, watch mode continues monitoring:
+
+```bash
+✖ [14:26:31] Insufficient credits
+```
+
+Fix the issue (or update your prompt) and save again.
+
+## Stopping Watch Mode
+
+Press `Ctrl+C` to stop watching and exit:
+
+```bash
+^C
+Stopped watching.
+```
+
+## Implementation Details
+
+The watch implementation (from `src/cli.ts:242-303`):
+
+- Uses `watchFile()` with a persistent callback
+- Maintains a `generating` flag to prevent concurrent requests
+- Reads the file synchronously on each change
+- Cleans up with `unwatchFile()` on SIGINT
+- Keeps the process alive with an empty promise
+
+## Use Cases
+
+<CardGroup cols={2}>
+  <Card title="Prompt Iteration" icon="pencil">
+    Rapidly test variations of a prompt by editing and saving
+  </Card>
+  <Card title="Live Preview" icon="eye">
+    See results update in real-time as you refine your prompt
+  </Card>
+  <Card title="Batch Testing" icon="list">
+    Queue up prompt changes and review results sequentially
+  </Card>
+  <Card title="External Editors" icon="code">
+    Use your favorite text editor while images generate automatically
+  </Card>
+</CardGroup>
+
+## Example Workflow
+
+1. Create a prompt file:
+
+```bash
+echo "a serene mountain landscape at sunset" > prompt.txt
+```
+
+2. Start watching:
+
+```bash
+pixelmuse --watch prompt.txt -o landscape.png -m flux-schnell
+```
+
+3. Edit `prompt.txt` in your editor:
+
+```text
+a serene mountain landscape at sunset, dramatic clouds, golden hour
+```
+
+4. Save the file → automatic regeneration
+
+5. Continue editing and saving until satisfied
+
+6. Press `Ctrl+C` to stop
+
+## Limitations
+
+- Only monitors a single file
+- Polling-based (500ms interval) rather than event-based
+- No debouncing — each save triggers a generation
+- Cannot change model/aspect ratio without restarting
+- Explicit `-o` path recommended (otherwise slugified name changes with prompt)

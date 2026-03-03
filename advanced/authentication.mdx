@@ -1,0 +1,292 @@
+---
+title: Authentication
+description: Device flow login, API key management, and secure credential storage
+---
+
+Pixelmuse CLI supports two authentication methods: **device flow** (browser-based OAuth) and **manual API key** entry. Credentials are stored securely using OS keychain when available.
+
+## Device Flow Login
+
+The recommended authentication method uses OAuth device flow:
+
+```bash
+pixelmuse login
+```
+
+This initiates a browser-based login:
+
+1. **Device code generation**: CLI requests a device code from the API
+2. **Browser opens**: Verification URL opens automatically
+3. **User authorization**: Approve the CLI in your browser
+4. **Token polling**: CLI polls for the access token
+5. **API key received**: Your API key is securely stored
+
+### Device Flow Output
+
+```bash
+Pixelmuse Login
+
+  Your code: ABCD-1234
+
+  Opening https://www.pixelmuse.studio/auth/device?code=ABCD-1234
+  Or visit https://www.pixelmuse.studio/auth/device and enter the code manually
+
+⠹ Waiting for authorization...
+✓ Authenticated as you@example.com (100 credits)
+```
+
+<Note>
+The user code expires after a set time (default: 15 minutes). If you don't approve in time, run `pixelmuse login` again.
+</Note>
+
+## Manual API Key
+
+If device flow is unavailable (e.g., in SSH sessions or CI environments), the CLI falls back to manual entry:
+
+```bash
+pixelmuse login
+```
+
+Output:
+
+```bash
+Browser login unavailable. Enter your API key manually.
+
+  Get your key at: https://www.pixelmuse.studio/settings/api-keys
+
+API key: pm_live_********************************
+✓ Authenticated as you@example.com (100 credits)
+```
+
+### API Key Format
+
+Valid API keys follow this pattern:
+
+- **Live keys**: `pm_live_` + 32 hex characters
+- **Test keys**: `pm_test_` + 32 hex characters
+
+The CLI validates the format before attempting authentication.
+
+## Storage Hierarchy
+
+API keys are resolved in this order:
+
+### 1. Environment Variable (highest priority)
+
+```bash
+export PIXELMUSE_API_KEY="pm_live_abc123..."
+pixelmuse "a cat"
+```
+
+Useful for:
+- CI/CD pipelines
+- Temporary overrides
+- Containerized environments
+
+### 2. OS Keychain (recommended)
+
+On macOS/Linux, the CLI uses the OS keychain via `keyring-node`:
+
+- **macOS**: Keychain Access (Keychain.app)
+- **Linux**: Secret Service API (GNOME Keyring, KWallet)
+- **Windows**: Credential Manager
+
+Stored as:
+- **Service**: `pixelmuse-cli`
+- **Account**: `api-key`
+
+### 3. Config File (fallback)
+
+If keychain is unavailable, credentials are stored in:
+
+```
+~/.config/pixelmuse-cli/auth.json
+```
+
+With restrictive permissions (`chmod 600`):
+
+```json
+{
+  "apiKey": "pm_live_abc123..."
+}
+```
+
+<Warning>
+The config file is readable by any process running as your user. Use environment variables or keychain storage when possible.
+</Warning>
+
+## Implementation Details
+
+### Device Flow Protocol
+
+The implementation follows OAuth 2.0 Device Authorization Grant ([RFC 8628](https://tools.ietf.org/html/rfc8628)):
+
+**Initiate** (`src/core/device-auth.ts:20-49`):
+
+```typescript
+POST /api/v1/auth/device
+{
+  "client_info": {
+    "platform": "darwin",
+    "cli_version": "1.0.0"
+  }
+}
+```
+
+Response:
+
+```json
+{
+  "device_code": "ABC123...",
+  "user_code": "ABCD-1234",
+  "verification_uri": "https://www.pixelmuse.studio/auth/device",
+  "verification_uri_complete": "https://www.pixelmuse.studio/auth/device?code=ABCD-1234",
+  "expires_in": 900,
+  "interval": 5
+}
+```
+
+**Poll** (`src/core/device-auth.ts:52-108`):
+
+```typescript
+POST /api/v1/auth/device/token
+{
+  "device_code": "ABC123...",
+  "grant_type": "urn:ietf:params:oauth:grant-type:device_code"
+}
+```
+
+Possible responses:
+
+- `{"api_key": "pm_live_..."}` — Success
+- `{"error": "authorization_pending"}` — Keep polling
+- `{"error": "slow_down", "interval": 10}` — Increase polling interval
+- `{"error": "expired_token"}` — Code expired
+- `{"error": "access_denied"}` — User rejected
+
+### Key Storage
+
+**Save** (`src/core/auth.ts:42-57`):
+
+```typescript
+export async function saveApiKey(key: string): Promise<void> {
+  ensureDirs()
+  try {
+    const { setPassword } = await import('keyring-node')
+    setPassword('pixelmuse-cli', 'api-key', key)
+    return
+  } catch {
+    // Fallback to file
+    writeFileSync(PATHS.auth, JSON.stringify({ apiKey: key }), 'utf-8')
+    chmodSync(PATHS.auth, 0o600)
+  }
+}
+```
+
+**Retrieve** (`src/core/auth.ts:14-39`):
+
+```typescript
+export async function getApiKey(): Promise<string | null> {
+  // 1. Environment
+  if (process.env.PIXELMUSE_API_KEY) return process.env.PIXELMUSE_API_KEY
+  
+  // 2. Keychain
+  try {
+    const { getPassword } = await import('keyring-node')
+    const key = getPassword('pixelmuse-cli', 'api-key')
+    if (key) return key
+  } catch {}
+  
+  // 3. File
+  if (existsSync(PATHS.auth)) {
+    const data = JSON.parse(readFileSync(PATHS.auth, 'utf-8'))
+    if (data.apiKey) return data.apiKey
+  }
+  
+  return null
+}
+```
+
+## Logout
+
+Remove stored credentials:
+
+```bash
+pixelmuse logout
+```
+
+This deletes the key from:
+- OS keychain (if present)
+- Config file `~/.config/pixelmuse-cli/auth.json`
+
+Environment variables are not affected.
+
+## Verification
+
+Check your authentication status:
+
+```bash
+pixelmuse account
+```
+
+Output:
+
+```bash
+Email:    you@example.com
+Plan:     pro
+Credits:  100 (50 subscription + 50 purchased)
+Rate:     60 req/min
+```
+
+## CI/CD Usage
+
+For automated environments:
+
+```yaml
+# GitHub Actions example
+steps:
+  - name: Generate image
+    env:
+      PIXELMUSE_API_KEY: ${{ secrets.PIXELMUSE_API_KEY }}
+    run: pixelmuse "product hero image" -o dist/hero.png
+```
+
+<Tip>
+Create a separate API key for CI/CD with limited permissions. Revoke it from your dashboard if compromised.
+</Tip>
+
+## Troubleshooting
+
+### "Not authenticated" Error
+
+```bash
+pixelmuse "a cat"
+# Error: Not authenticated. Run: pixelmuse login
+```
+
+**Solution**: Run `pixelmuse login` or set `PIXELMUSE_API_KEY`
+
+### Invalid Key Format
+
+```bash
+Invalid key format. Keys start with pm_live_ or pm_test_
+```
+
+**Solution**: Double-check the key from your dashboard. It should be 40 characters total.
+
+### Device Flow Timeout
+
+```bash
+Authorization timed out. Run `pixelmuse setup` to try again.
+```
+
+**Solution**: The 15-minute window expired. Run `pixelmuse login` again and approve faster.
+
+### Keychain Permission Denied
+
+If keychain storage fails, the CLI falls back to file storage automatically. Check file permissions:
+
+```bash
+ls -la ~/.config/pixelmuse-cli/auth.json
+# Should show: -rw------- (600)
+```

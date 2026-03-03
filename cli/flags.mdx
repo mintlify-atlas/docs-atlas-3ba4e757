@@ -1,0 +1,169 @@
+---
+title: CLI Flags
+description: Command-line flags for controlling Pixelmuse behavior
+---
+
+All CLI flags can be used with any generation command to customize the output and behavior.
+
+## Generation Options
+
+<ParamField path="-m, --model" type="string" default="nano-banana-2">
+  Model ID to use for generation. Available models include `nano-banana-2`, `nano-banana-pro`, `flux-schnell`, `imagen-3`, `recraft-v4`, and `recraft-v4-pro`.
+
+  ```bash
+  pixelmuse "sunset over mountains" --model nano-banana-pro
+  ```
+</ParamField>
+
+<ParamField path="-a, --aspect-ratio" type="string" default="1:1">
+  Aspect ratio for the generated image. Supported values: `1:1`, `16:9`, `9:16`, `4:3`, `3:4`, `21:9`.
+
+  ```bash
+  pixelmuse "app icon, minimal" -a 1:1
+  ```
+</ParamField>
+
+<ParamField path="-s, --style" type="string">
+  Style preset to apply. Options: `realistic`, `anime`, `artistic`, `none`.
+
+  ```bash
+  pixelmuse "portrait of a warrior" --style anime
+  ```
+</ParamField>
+
+## Output Options
+
+<ParamField path="-o, --output" type="string">
+  Output file path where the generated image will be saved.
+
+  ```bash
+  pixelmuse "hero banner" -o ./assets/hero.png
+  ```
+</ParamField>
+
+<ParamField path="--no-save" type="boolean" default="false">
+  Don't save the image to disk. Useful when combined with `--json` for getting metadata only.
+
+  ```bash
+  pixelmuse "test image" --no-save --json
+  ```
+</ParamField>
+
+<ParamField path="--clipboard" type="boolean" default="false">
+  Copy the generated image to the system clipboard after generation.
+
+  ```bash
+  pixelmuse "quick mockup" --clipboard
+  ```
+</ParamField>
+
+## Display Options
+
+<ParamField path="--json" type="boolean" default="false">
+  Output machine-readable JSON instead of interactive display. Useful for scripting and automation.
+
+  ```bash
+  pixelmuse "logo design" --json
+  ```
+
+  Returns:
+  ```json
+  {
+    "id": "gen_abc123...",
+    "status": "succeeded",
+    "model": "nano-banana-2",
+    "prompt": "logo design",
+    "credits_charged": 1,
+    "visibility": "private",
+    "elapsed_seconds": 3.2,
+    "output_path": "/path/to/image.png"
+  }
+  ```
+</ParamField>
+
+<ParamField path="--no-preview" type="boolean" default="false">
+  Skip the terminal image preview. By default, images are previewed using `chafa` if installed.
+
+  ```bash
+  pixelmuse "background texture" --no-preview
+  ```
+</ParamField>
+
+<ParamField path="--open" type="boolean" default="false">
+  Open the generated image in the system's default image viewer after creation.
+
+  ```bash
+  pixelmuse "final render" --open
+  ```
+</ParamField>
+
+## Watch Mode
+
+<ParamField path="--watch" type="string">
+  Watch a prompt file and automatically regenerate when it changes. Useful for iterative design workflows.
+
+  ```bash
+  pixelmuse --watch prompt.txt -o output.png
+  ```
+
+  The command will:
+  - Generate an initial image from the file contents
+  - Watch for file changes every 500ms
+  - Regenerate automatically on save
+  - Continue until you press Ctrl+C
+</ParamField>
+
+## Visibility Options
+
+<ParamField path="--public" type="boolean" default="false">
+  Make the generated image publicly visible. By default, all generations are private.
+
+  ```bash
+  pixelmuse "portfolio piece" --public
+  ```
+</ParamField>
+
+## Template Variables
+
+<ParamField path="--var" type="string" isMultiple="true">
+  Set variables for prompt templates. Can be used multiple times to set different variables.
+
+  ```bash
+  pixelmuse template use blog-thumbnail --var subject="React hooks" --var style="modern"
+  ```
+
+  Format: `--var key=value`
+</ParamField>
+
+## Help & Version
+
+<ParamField path="-h, --help" type="boolean">
+  Display help information and exit.
+
+  ```bash
+  pixelmuse --help
+  ```
+</ParamField>
+
+<ParamField path="-v, --version" type="boolean">
+  Show the installed Pixelmuse version and exit.
+
+  ```bash
+  pixelmuse --version
+  ```
+</ParamField>
+
+## Flag Combinations
+
+Flags can be combined for powerful workflows:
+
+```bash
+# Generate, save to specific path, open in viewer, and copy to clipboard
+pixelmuse "product mockup" -o mockup.png --open --clipboard
+
+# High-quality generation with custom aspect ratio in JSON mode
+pixelmuse "hero image" -m recraft-v4-pro -a 16:9 --json
+
+# Watch mode with custom model and style
+pixelmuse --watch prompt.txt -m flux-schnell -s artistic -o output.png
+```

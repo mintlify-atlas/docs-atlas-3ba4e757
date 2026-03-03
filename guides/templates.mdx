@@ -1,0 +1,268 @@
+---
+title: Prompt templates
+description: Create reusable prompts with variables, defaults, and metadata
+---
+
+Prompt templates let you save frequently-used prompts as YAML files with variables, default settings, and tags. They're perfect for brand-consistent generation, client work, or iterating on similar prompts.
+
+## Creating templates
+
+### Scaffold a new template
+
+```bash
+pixelmuse template init blog-thumbnail
+```
+
+This creates `~/.config/pixelmuse-cli/prompts/blog-thumbnail.yaml` with a starter structure:
+
+```yaml
+name: blog-thumbnail
+description: blog-thumbnail template
+prompt: A {{subject}} with dramatic lighting
+defaults:
+  model: nano-banana-2
+  aspect_ratio: "16:9"
+variables:
+  subject: landscape
+tags: []
+```
+
+### Edit the template
+
+Open the YAML file in your editor and customize:
+
+```yaml
+name: Blog Thumbnail
+description: Dark-themed blog post thumbnail with cinematic lighting
+prompt: >
+  A cinematic {{subject}} on a dark gradient background,
+  dramatic lighting, 8K resolution, {{mood}} atmosphere
+defaults:
+  model: recraft-v4
+  aspect_ratio: "16:9"
+  style: artistic
+variables:
+  subject: "code editor with syntax highlighting"
+  mood: "mysterious"
+tags: [blog, thumbnail, dark, cinematic]
+```
+
+## Template structure
+
+<ParamField path="name" type="string" required>
+Display name for the template (shown in `pixelmuse template list`)
+</ParamField>
+
+<ParamField path="description" type="string">
+Brief description of the template's purpose
+</ParamField>
+
+<ParamField path="prompt" type="string" required>
+The prompt text with `{{variable}}` placeholders. Use YAML's `>` for multiline prompts.
+</ParamField>
+
+<ParamField path="defaults" type="object">
+Default generation settings:
+- `model`: Model ID (e.g., `nano-banana-2`, `recraft-v4`)
+- `aspect_ratio`: Aspect ratio (e.g., `"16:9"`, `"1:1"`)
+- `style`: Visual style (`realistic`, `anime`, `artistic`, `none`)
+</ParamField>
+
+<ParamField path="variables" type="object" required>
+Default values for variables used in the prompt. Keys must match `{{variable}}` names.
+</ParamField>
+
+<ParamField path="tags" type="array">
+Searchable tags for organization (not currently used by CLI, but useful for documentation)
+</ParamField>
+
+## Using templates
+
+### Use with default variables
+
+```bash
+pixelmuse template use blog-thumbnail
+```
+
+This generates an image using the template's default `subject` and `mood` variables.
+
+### Override variables
+
+```bash
+pixelmuse template use blog-thumbnail --var subject="React hooks guide" --var mood="energetic"
+```
+
+Expands to:
+
+```
+A cinematic React hooks guide on a dark gradient background,
+dramatic lighting, 8K resolution, energetic atmosphere
+```
+
+### Override model or aspect ratio
+
+```bash
+pixelmuse template use blog-thumbnail --var subject="TypeScript tutorial" -m imagen-3 -a 21:9
+```
+
+Flags override template defaults.
+
+## Listing templates
+
+```bash
+pixelmuse template list
+```
+
+Output:
+
+```
+Blog Thumbnail — Dark-themed blog post thumbnail with cinematic lighting
+  tags: blog, thumbnail, dark, cinematic
+
+Product Shot — Professional product photography on white background
+  tags: product, ecommerce, clean
+```
+
+## Viewing template details
+
+```bash
+pixelmuse template show blog-thumbnail
+```
+
+Output:
+
+```
+Blog Thumbnail
+Dark-themed blog post thumbnail with cinematic lighting
+
+Prompt: A cinematic {{subject}} on a dark gradient background,
+dramatic lighting, 8K resolution, {{mood}} atmosphere
+Variables: subject, mood
+  subject = "code editor with syntax highlighting"
+  mood = "mysterious"
+Model: recraft-v4
+Aspect: 16:9
+```
+
+## Variable interpolation
+
+Templates use `{{variable}}` syntax. At generation time, variables are replaced:
+
+```yaml
+prompt: "A {{color}} {{object}} in {{setting}}"
+variables:
+  color: "red"
+  object: "car"
+  setting: "snowy mountain road"
+```
+
+Expands to:
+
+```
+A red car in snowy mountain road
+```
+
+### Missing variables
+
+If you reference `{{variable}}` in the prompt but don't provide a value, the variable name remains in the prompt. Always define defaults in the `variables` section.
+
+## Template storage
+
+Templates are stored as YAML files in:
+
+- **macOS**: `~/Library/Application Support/pixelmuse-cli/prompts/`
+- **Linux**: `~/.config/pixelmuse-cli/prompts/`
+- **Windows**: `%APPDATA%\pixelmuse-cli\prompts\`
+
+File names are slugified versions of the template name:
+- `Blog Thumbnail` → `blog-thumbnail.yaml`
+- `Product Shot - White BG` → `product-shot-white-bg.yaml`
+
+## Example templates
+
+### Social media post
+
+```yaml
+name: Social Media Post
+description: Square image for Instagram, Twitter, etc.
+prompt: "{{content}} with bold typography, {{brand_color}} accent, modern minimalist design"
+defaults:
+  model: recraft-v4
+  aspect_ratio: "1:1"
+variables:
+  content: "Launch announcement"
+  brand_color: "purple"
+tags: [social, square, branding]
+```
+
+Usage:
+
+```bash
+pixelmuse template use social-media-post \
+  --var content="New feature release" \
+  --var brand_color="blue"
+```
+
+### App icon
+
+```yaml
+name: App Icon
+description: Minimal app icon on solid background
+prompt: "{{app_name}} app icon, {{style}} design, {{color_scheme}} color scheme, simple geometric shapes, centered"
+defaults:
+  model: nano-banana-2
+  aspect_ratio: "1:1"
+variables:
+  app_name: "MyApp"
+  style: "modern minimalist"
+  color_scheme: "blue and white"
+tags: [icon, app, minimal]
+```
+
+### Hero image
+
+```yaml
+name: Hero Image
+description: Wide hero banner for landing pages
+prompt: >
+  {{subject}} in a {{setting}}, dramatic lighting,
+  cinematic composition, high contrast, 8K, professional photography
+defaults:
+  model: imagen-3
+  aspect_ratio: "21:9"
+  style: realistic
+variables:
+  subject: "team collaborating"
+  setting: "modern office"
+tags: [hero, banner, landing-page, wide]
+```
+
+## Implementation details
+
+Templates are managed by:
+
+- `listTemplates()` — Returns array of `PromptTemplate` objects
+- `getTemplate(name)` — Loads a template by name (fuzzy match)
+- `saveTemplate(template)` — Writes a template to disk
+- `interpolate(prompt, variables)` — Replaces `{{variable}}` placeholders
+- `extractVariables(prompt)` — Finds all `{{variable}}` references
+- `slugify(name)` — Converts template name to filename
+
+Source: `src/core/prompts.ts`
+
+## Next steps
+
+<CardGroup cols={2}>
+  <Card title="CLI usage" icon="terminal" href="/guides/cli-usage">
+    Learn command-line workflows
+  </Card>
+  <Card title="Prompts guide" icon="wand-magic-sparkles" href="/concepts/prompts">
+    Prompting best practices
+  </Card>
+  <Card title="Watch mode" icon="eye" href="/advanced/watch-mode">
+    Auto-regenerate on file changes
+  </Card>
+  <Card title="Scripting" icon="code" href="/guides/scripting">
+    Automate template usage
+  </Card>
+</CardGroup>

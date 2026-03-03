@@ -1,0 +1,222 @@
+---
+title: Interfaces
+description: Choose between CLI, TUI, and MCP server modes based on your workflow
+---
+
+Pixelmuse provides three interfaces for different use cases: a command-line interface (CLI) for scripting and quick generations, a terminal user interface (TUI) for interactive browsing, and an MCP server for AI agent integration.
+
+## CLI (Command-Line Interface)
+
+The CLI is the default interface when you run `pixelmuse` with arguments. It's designed for scripting, automation, and quick one-off generations.
+
+### When to use the CLI
+
+- Quick image generation from the terminal
+- Scripting and automation workflows
+- CI/CD pipelines
+- Pipe-based workflows with other commands
+- Batch processing with shell scripts
+
+### Basic usage
+
+```bash
+# Generate with defaults
+pixelmuse "astronaut riding a horse"
+
+# Specify model and aspect ratio
+pixelmuse "app icon, minimal" -m nano-banana-pro -a 1:1 -o icon.png
+
+# Pipe from stdin
+echo "cyberpunk cityscape" | pixelmuse
+
+# Machine-readable output for scripting
+pixelmuse "forest landscape" --json
+```
+
+### Available commands
+
+<CodeGroup>
+```bash Generation
+pixelmuse "your prompt"              # Default generation
+pixelmuse "prompt" -o hero.png       # Save to specific path
+pixelmuse --watch prompt.txt         # Watch file for changes
+```
+
+```bash Account
+pixelmuse account                    # View balance & usage
+pixelmuse models                     # List available models
+pixelmuse history                    # Recent generations
+```
+
+```bash Templates
+pixelmuse template list              # List saved templates
+pixelmuse template use blog-thumbnail --var subject="React"
+pixelmuse template init my-template  # Create new template
+```
+</CodeGroup>
+
+### CLI flags
+
+| Flag | Description | Default |
+|------|-------------|----------|
+| `-m, --model` | Model to use | `nano-banana-2` |
+| `-a, --aspect-ratio` | Image dimensions | `1:1` |
+| `-s, --style` | Visual style | `none` |
+| `-o, --output` | Output file path | Auto-generated |
+| `--json` | Machine-readable output | `false` |
+| `--no-preview` | Skip terminal preview | `false` |
+| `--open` | Open in system viewer | `false` |
+| `--public` | Make image public | `false` |
+| `--clipboard` | Copy to clipboard | `false` |
+
+<Note>
+The CLI automatically polls for completion when using async models and displays progress with spinners.
+</Note>
+
+## TUI (Terminal User Interface)
+
+The TUI provides an interactive, visual interface for browsing models, managing templates, and viewing generation history.
+
+### When to use the TUI
+
+- Interactive exploration of models and settings
+- Browsing generation history
+- Managing prompt templates visually
+- When you prefer a guided interface over command flags
+
+### Launch the TUI
+
+```bash
+pixelmuse ui
+```
+
+The TUI is built with [Ink](https://github.com/vadimdemedes/ink) and provides:
+
+- Real-time model browsing with costs and capabilities
+- Interactive prompt editing
+- Template management
+- Generation history with filters
+- Keyboard navigation
+
+<Tip>
+The TUI uses the same configuration and settings as the CLI, so defaults set via `pixelmuse setup` apply automatically.
+</Tip>
+
+## MCP Server (Model Context Protocol)
+
+The MCP server exposes Pixelmuse capabilities to AI agents like Claude Desktop, enabling AI assistants to generate images on your behalf.
+
+### When to use the MCP server
+
+- Integration with Claude Desktop or other MCP clients
+- AI agents that need image generation capabilities
+- Automated workflows driven by AI assistants
+- Multi-step tasks combining text and image generation
+
+### Configuration
+
+The MCP server is automatically configured during `pixelmuse setup` for supported editors:
+
+```bash
+pixelmuse setup
+# Detects Claude Desktop, Cline, Roo Code, etc.
+# Adds MCP server configuration automatically
+```
+
+### Manual configuration
+
+Add to your MCP client's configuration (e.g., `claude_desktop_config.json`):
+
+```json
+{
+  "mcpServers": {
+    "pixelmuse": {
+      "command": "npx",
+      "args": ["-y", "pixelmuse", "mcp"],
+      "env": {
+        "PIXELMUSE_API_KEY": "pm_live_..."
+      }
+    }
+  }
+}
+```
+
+### Available MCP tools
+
+The MCP server exposes three tools to AI agents:
+
+#### `generate_image`
+
+Generate an AI image with full control over parameters.
+
+```typescript
+{
+  prompt: string                    // Required: image description
+  model?: string                    // Default: "nano-banana-2"
+  aspect_ratio?: string             // Default: "1:1"
+  style?: string                    // Default: "none"
+  output_path?: string              // Optional: where to save
+  visibility?: "public" | "private" // Default: "private"
+}
+```
+
+#### `list_models`
+
+Retrieve all available models with costs and capabilities.
+
+```typescript
+{} // No parameters
+```
+
+Returns:
+```json
+[
+  {
+    "id": "nano-banana-2",
+    "name": "Nano Banana v2",
+    "credit_cost": 1,
+    "strengths": ["Fast", "Low cost", "General purpose"],
+    "supported_aspect_ratios": ["1:1", "16:9", "9:16", ...]
+  }
+]
+```
+
+#### `check_balance`
+
+Check account credit balance and plan information.
+
+```typescript
+{} // No parameters
+```
+
+Returns:
+```json
+{
+  "email": "user@example.com",
+  "plan": "free",
+  "credits_total": 25,
+  "credits_subscription": 25,
+  "credits_purchased": 0,
+  "rate_limit": 10
+}
+```
+
+<Note>
+The MCP server reads API keys from the environment variable `PIXELMUSE_API_KEY` or from the system keyring if available.
+</Note>
+
+## Choosing the right interface
+
+| Use Case | Recommended Interface |
+|----------|----------------------|
+| Quick one-off generation | CLI |
+| Scripting and automation | CLI with `--json` |
+| Exploring models and settings | TUI |
+| Managing templates | TUI or CLI |
+| AI agent integration | MCP Server |
+| Watch mode for iterative design | CLI with `--watch` |
+| Browsing generation history | TUI |
+
+<Tip>
+You can mix interfaces freely. Generate via CLI, browse history in TUI, and let AI agents use MCP—all share the same configuration and data.
+</Tip>

@@ -1,0 +1,72 @@
+---
+title: "check_balance"
+description: "Check Pixelmuse account credit balance and plan information"
+---
+
+Check Pixelmuse account credit balance and plan info.
+
+This tool retrieves your current account status, including available credits and rate limits.
+
+## Input Parameters
+
+This tool accepts no parameters.
+
+## Response Fields
+
+<ResponseField name="email" type="string">
+  Email address associated with the Pixelmuse account.
+</ResponseField>
+
+<ResponseField name="plan" type="string">
+  Current subscription plan name (e.g., "free", "pro", "enterprise").
+</ResponseField>
+
+<ResponseField name="credits_total" type="number">
+  Total credits currently available in the account.
+</ResponseField>
+
+<ResponseField name="credits_subscription" type="number">
+  Credits from subscription plan allocation.
+</ResponseField>
+
+<ResponseField name="credits_purchased" type="number">
+  Credits purchased separately (one-time purchases).
+</ResponseField>
+
+<ResponseField name="rate_limit" type="number">
+  Maximum number of requests allowed per minute.
+</ResponseField>
+
+## Example Request
+
+```json
+{}
+```
+
+## Example Response
+
+```json
+{
+  "email": "user@example.com",
+  "plan": "pro",
+  "credits_total": 1500,
+  "credits_subscription": 1000,
+  "credits_purchased": 500,
+  "rate_limit": 60
+}
+```
+
+## Usage
+
+Use this tool to:
+- Check available credits before generating images
+- Verify account plan and rate limits
+- Monitor credit consumption from subscription vs. purchased credits
+- Ensure sufficient credits for batch operations
+
+## Error Handling
+
+The tool will throw an error if:
+- No API key is found in environment or stored credentials
+- The API key is invalid or expired
+- Network or API errors occur

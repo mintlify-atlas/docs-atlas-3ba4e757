@@ -1,0 +1,393 @@
+---
+title: Prompts
+description: Master prompt engineering and use templates for consistent results
+---
+
+Effective prompts are key to generating high-quality images. Pixelmuse supports both direct prompts and reusable templates with variables.
+
+## Prompt basics
+
+### Direct prompts
+
+The simplest way to generate images is with a descriptive prompt:
+
+```bash
+pixelmuse "astronaut riding a horse"
+```
+
+Prompts can be as simple or detailed as needed:
+
+<CodeGroup>
+```bash Simple
+pixelmuse "sunset"
+```
+
+```bash Detailed
+pixelmuse "sunset over mountains, golden hour, dramatic clouds, cinematic lighting"
+```
+
+```bash Styled
+pixelmuse "sunset" -s realistic -a 16:9
+```
+</CodeGroup>
+
+### Prompt guidelines
+
+<Steps>
+  <Step title="Be specific">
+    Describe exactly what you want. Instead of "a car", try "red sports car on coastal highway at sunset".
+  </Step>
+  
+  <Step title="Include style keywords">
+    Words like "cinematic", "detailed", "minimalist", or "dramatic" guide the aesthetic.
+  </Step>
+  
+  <Step title="Specify lighting and mood">
+    "Golden hour lighting", "soft shadows", "moody atmosphere" affect the final result.
+  </Step>
+  
+  <Step title="Use the style flag">
+    Add `-s realistic`, `-s anime`, or `-s artistic` for consistent style application.
+  </Step>
+</Steps>
+
+### Style options
+
+Pixelmuse supports four style presets:
+
+```typescript
+type Style = 'realistic' | 'anime' | 'artistic' | 'none'
+```
+
+<Tabs>
+  <Tab title="Realistic">
+    ```bash
+    pixelmuse "portrait of a woman" -s realistic
+    ```
+    Enhances photorealism, accurate lighting, and material rendering. Best with `imagen-3`.
+  </Tab>
+  
+  <Tab title="Anime">
+    ```bash
+    pixelmuse "warrior character" -s anime
+    ```
+    Applies anime/manga aesthetic with cel-shaded look and expressive features.
+  </Tab>
+  
+  <Tab title="Artistic">
+    ```bash
+    pixelmuse "cityscape" -s artistic
+    ```
+    Encourages creative interpretation, painterly effects, and stylization.
+  </Tab>
+  
+  <Tab title="None">
+    ```bash
+    pixelmuse "logo design" -s none
+    ```
+    Default. Lets the model interpret the prompt naturally without style bias.
+  </Tab>
+</Tabs>
+
+<Tip>
+Set a default style with `pixelmuse setup` to apply it automatically to all generations.
+</Tip>
+
+## Negative prompts
+
+Exclude unwanted elements with `--negative` (available in API, coming soon to CLI):
+
+```typescript
+import { PixelmuseClient } from 'pixelmuse'
+
+const client = new PixelmuseClient(apiKey)
+const gen = await client.generate({
+  prompt: 'forest landscape',
+  negative_prompt: 'people, buildings, cars, modern',
+  model: 'flux-schnell'
+})
+```
+
+## Prompt templates
+
+Templates let you create reusable prompts with variables for consistent results across variations.
+
+### Template structure
+
+Templates are YAML files stored in `~/.config/pixelmuse-cli/prompts/`:
+
+```yaml
+name: blog-thumbnail
+description: Blog post thumbnail with consistent style
+prompt: "Blog header image: {{topic}}, {{mood}} mood, modern design, 16:9"
+defaults:
+  model: nano-banana-pro
+  aspect_ratio: 16:9
+  style: artistic
+variables:
+  topic: technology
+  mood: vibrant
+tags:
+  - blog
+  - social
+```
+
+### Creating templates
+
+<CodeGroup>
+```bash Initialize
+pixelmuse template init blog-thumbnail
+# Creates ~/.config/pixelmuse-cli/prompts/blog-thumbnail.yaml
+```
+
+```yaml Edit template
+# Edit the generated YAML file
+name: blog-thumbnail
+description: Consistent blog thumbnails
+prompt: "{{subject}} with {{style_keywords}}, professional, clean"
+defaults:
+  model: recraft-v4
+  aspect_ratio: 16:9
+variables:
+  subject: "technology concept"
+  style_keywords: "gradient background"
+tags:
+  - blog
+  - content
+```
+</CodeGroup>
+
+### Using templates
+
+Generate images from templates with the `template use` command:
+
+```bash
+# Use with default variables
+pixelmuse template use blog-thumbnail
+
+# Override variables
+pixelmuse template use blog-thumbnail \
+  --var subject="AI and machine learning" \
+  --var mood="futuristic"
+
+# Override model/aspect ratio
+pixelmuse template use blog-thumbnail -m flux-schnell -a 21:9
+```
+
+### Template variables
+
+Variables use the `{{variable}}` syntax:
+
+```yaml
+prompt: "A {{animal}} wearing a {{clothing_item}} in {{location}}"
+variables:
+  animal: cat
+  clothing_item: hat
+  location: garden
+```
+
+Variable extraction is automatic:
+
+```typescript
+import { extractVariables } from 'pixelmuse'
+
+const prompt = "{{subject}} with {{style}}, {{mood}} lighting"
+const vars = extractVariables(prompt)
+// Returns: ['subject', 'style', 'mood']
+```
+
+### Template management
+
+<CodeGroup>
+```bash List templates
+pixelmuse template list
+
+# Output:
+blog-thumbnail — Blog post thumbnails with consistent style
+  tags: blog, social
+
+product-shot — Product photography template
+  tags: ecommerce, products
+```
+
+```bash Show template details
+pixelmuse template show blog-thumbnail
+
+# Output:
+blog-thumbnail
+Blog post thumbnail with consistent style
+
+Prompt: Blog header image: {{topic}}, {{mood}} mood, modern design
+Variables: topic, mood
+  topic = "technology"
+  mood = "vibrant"
+Model: nano-banana-pro
+Aspect: 16:9
+```
+</CodeGroup>
+
+### Template interpolation
+
+Templates are interpolated at generation time:
+
+```typescript
+import { interpolate } from 'pixelmuse'
+
+const template = "A {{color}} {{object}} in {{setting}}"
+const result = interpolate(template, {
+  color: 'blue',
+  object: 'car',
+  setting: 'desert'
+})
+// Returns: "A blue car in desert"
+```
+
+Missing variables are preserved:
+
+```typescript
+interpolate("{{a}} and {{b}}", { a: 'hello' })
+// Returns: "hello and {{b}}"
+```
+
+## Programmatic prompt building
+
+### Building prompts in code
+
+```typescript
+import { PixelmuseClient } from 'pixelmuse'
+
+const client = new PixelmuseClient(process.env.PIXELMUSE_API_KEY)
+
+const subjects = ['forest', 'ocean', 'mountains']
+const moods = ['serene', 'dramatic', 'mystical']
+
+for (const subject of subjects) {
+  for (const mood of moods) {
+    const prompt = `${subject} landscape, ${mood} atmosphere, golden hour`
+    
+    const gen = await client.generate({
+      prompt,
+      model: 'flux-schnell',
+      style: 'artistic',
+      aspect_ratio: '16:9'
+    })
+    
+    console.log(`Generated: ${gen.id}`)
+  }
+}
+```
+
+### Using templates programmatically
+
+```typescript
+import { getTemplate, interpolate } from 'pixelmuse'
+
+const template = getTemplate('blog-thumbnail')
+
+if (template) {
+  const prompt = interpolate(template.prompt, {
+    topic: 'Machine Learning',
+    mood: 'professional'
+  })
+  
+  const gen = await client.generate({
+    prompt,
+    model: template.defaults.model || 'nano-banana-2',
+    aspect_ratio: template.defaults.aspect_ratio || '1:1',
+    style: template.defaults.style as Style
+  })
+}
+```
+
+### Saving templates programmatically
+
+```typescript
+import { saveTemplate } from 'pixelmuse'
+
+const template = {
+  name: 'logo-concept',
+  description: 'Logo design concepts',
+  prompt: 'Logo for {{company_name}}, {{industry}}, {{style_keywords}}',
+  defaults: {
+    model: 'recraft-v4',
+    aspect_ratio: '1:1',
+    style: 'none'
+  },
+  variables: {
+    company_name: 'Acme Corp',
+    industry: 'technology',
+    style_keywords: 'modern, minimalist'
+  },
+  tags: ['logo', 'branding']
+}
+
+saveTemplate(template)
+// Saves to ~/.config/pixelmuse-cli/prompts/logo-concept.yaml
+```
+
+## Prompt best practices
+
+<AccordionGroup>
+  <Accordion title="Start simple, then iterate">
+    Begin with a basic prompt, generate, then refine with more details based on the result.
+  </Accordion>
+
+  <Accordion title="Use templates for consistency">
+    If generating multiple variations of the same concept, create a template to maintain consistency.
+  </Accordion>
+
+  <Accordion title="Match model to use case">
+    Use `imagen-3` for photorealism, `flux-schnell` for artistic work, `recraft-v4` for design.
+  </Accordion>
+
+  <Accordion title="Leverage the style flag">
+    Instead of adding style keywords to every prompt, use `-s realistic` or `-s artistic` for consistent application.
+  </Accordion>
+
+  <Accordion title="Test prompts cheaply">
+    Use `nano-banana-2` (1 credit) to test prompts before generating with premium models.
+  </Accordion>
+</AccordionGroup>
+
+## Watch mode for iteration
+
+Watch a text file and regenerate on save—perfect for rapid iteration:
+
+```bash
+# Create prompt file
+echo "cyberpunk cityscape, neon lights" > prompt.txt
+
+# Watch and regenerate on save
+pixelmuse --watch prompt.txt -o output.png -m flux-schnell
+
+# Edit prompt.txt in your editor, save, and see new result
+```
+
+Watch mode:
+- Monitors file changes every 500ms
+- Automatically regenerates on save
+- Preserves output path for easy comparison
+- Shows timestamp for each generation
+
+<Tip>
+Combine watch mode with templates by editing the template YAML file and using `pixelmuse template use template-name --watch`.
+</Tip>
+
+## Stdin support
+
+Pipe prompts from other commands:
+
+```bash
+# From echo
+echo "abstract pattern" | pixelmuse -m nano-banana-2
+
+# From file
+cat prompts.txt | pixelmuse --json
+
+# From script output
+./generate-prompt.sh | pixelmuse -o result.png
+```
+
+<Card title="API Reference" icon="code" href="/api-reference/client">
+  See full programmatic access to prompts and templates
+</Card>

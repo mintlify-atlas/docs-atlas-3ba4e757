@@ -1,0 +1,106 @@
+---
+title: history
+description: View recent image generations and their status
+---
+
+The `history` command displays your 20 most recent image generations with details about each one.
+
+## Usage
+
+```bash
+pixelmuse history
+```
+
+## Output Format
+
+Displays a table with:
+- **ID**: Generation ID (first 15 characters)
+- **Model**: Model used with status indicator
+- **Prompt**: Text prompt (truncated to 30 characters)
+- **Date**: Relative time (e.g., "2 hours ago")
+
+## Example Output
+
+```bash
+$ pixelmuse history
+
+ID                Model                 Prompt                            Date
+──────────────────────────────────────────────────────────────────────────────────────────
+gen_abc123456...  ● nano-banana-2 🔒     astronaut riding a horse         2 hours ago
+gen_def789012...  ● imagen-3              mountain landscape               5 hours ago
+gen_ghi345678...  ✗ flux-schnell         cosmic nebula                    1 day ago
+gen_jkl901234...  ◌ nano-banana-pro      futuristic city                  3 days ago
+```
+
+## Status Indicators
+
+- **● (green dot)**: Generation succeeded
+- **✗ (red X)**: Generation failed
+- **◌ (yellow circle)**: Generation in progress or pending
+
+## Visibility Indicators
+
+- **🔒 (lock icon)**: Private generation (default)
+- No icon: Public generation
+
+## Opening Previous Generations
+
+To view a specific generation from your history:
+
+```bash
+pixelmuse open gen_abc123456...
+```
+
+This will:
+1. Fetch the generation from the API
+2. Download the image if not already cached
+3. Open it in your system's default image viewer
+
+## Empty History
+
+If you haven't generated any images yet:
+
+```bash
+$ pixelmuse history
+No generations yet.
+```
+
+## Filtering and Search
+
+The `history` command shows the 20 most recent generations. For more advanced filtering or searching:
+
+- Visit the [Pixelmuse Dashboard](https://www.pixelmuse.studio/dashboard)
+- Use filters by date, model, status, or prompt keywords
+- Download or share generations from the web interface
+
+## Data Shown
+
+### Generation ID
+Truncated to 15 characters for readability. Use the full ID with the `open` command.
+
+### Model Name
+The AI model used for generation. See [models](/cli/models) for details.
+
+### Prompt
+Truncated to 30 characters. Full prompt is available when opening the generation or viewing in the dashboard.
+
+### Relative Time
+Shows when the generation was created:
+- "2 minutes ago"
+- "5 hours ago"
+- "3 days ago"
+- "2 weeks ago"
+
+## Authentication Required
+
+This command requires authentication:
+
+```bash
+Not authenticated. Run: pixelmuse login
+```
+
+## Related Commands
+
+- [generate](/cli/generate) - Create new images
+- [account](/cli/account) - View credit usage
+- [models](/cli/models) - List available models

@@ -1,0 +1,244 @@
+---
+title: CLI usage
+description: Master the Pixelmuse command-line interface for image generation workflows
+---
+
+The Pixelmuse CLI is the core interface for generating images from your terminal. It supports direct commands, stdin pipes, watch mode, and JSON output for scripting.
+
+## Basic usage
+
+The simplest way to generate an image is to provide a prompt:
+
+```bash
+pixelmuse "a cat floating through space"
+```
+
+This uses the default model (`nano-banana-2`), aspect ratio (`1:1`), and saves the image to `~/.local/share/pixelmuse-cli/generations/`.
+
+## Choosing models
+
+Specify a model with the `-m` or `--model` flag:
+
+```bash
+pixelmuse "neon cityscape at night" -m recraft-v4
+```
+
+Available models:
+- `nano-banana-2` (default) — 1 credit, fast, great for text rendering
+- `nano-banana-pro` — 4 credits, advanced text and real-time info
+- `flux-schnell` — 1 credit, quick mockups and ideation
+- `imagen-3` — 1 credit, realistic photos
+- `recraft-v4` — 1 credit, typography and design
+- `recraft-v4-pro` — 7 credits, high-res design work
+
+See the full model list:
+
+```bash
+pixelmuse models
+```
+
+## Aspect ratios
+
+Control the image dimensions with `-a` or `--aspect-ratio`:
+
+```bash
+pixelmuse "mountain landscape" -a 16:9
+pixelmuse "mobile app screenshot" -a 9:16
+pixelmuse "social media post" -a 1:1
+```
+
+Supported ratios: `1:1`, `16:9`, `9:16`, `4:3`, `3:4`, `3:2`, `2:3`, `4:5`, `5:4`, `21:9`, `9:21`
+
+## Styles
+
+Apply a visual style with `-s` or `--style`:
+
+```bash
+pixelmuse "forest scene" -s realistic
+pixelmuse "character design" -s anime
+pixelmuse "abstract art" -s artistic
+pixelmuse "product photo" -s none  # No style modification
+```
+
+## Output options
+
+### Save to a specific path
+
+```bash
+pixelmuse "app icon" -o ./public/icon.png
+```
+
+### Skip saving to disk
+
+```bash
+pixelmuse "preview" --no-save
+```
+
+### Copy to clipboard
+
+```bash
+pixelmuse "avatar" --clipboard
+```
+
+<Note>
+**macOS**: Uses `osascript` (built-in)  
+**Linux**: Requires `xclip` (`sudo apt install xclip`)
+</Note>
+
+### Open in system viewer
+
+```bash
+pixelmuse "landscape" --open
+```
+
+### Skip terminal preview
+
+```bash
+pixelmuse "background" --no-preview
+```
+
+## Piping from stdin
+
+Read prompts from stdin for integration with other tools:
+
+```bash
+echo "hero banner for SaaS landing page" | pixelmuse -o hero.png
+
+cat prompt.txt | pixelmuse -m recraft-v4
+
+# Generate from a list
+while IFS= read -r prompt; do
+  pixelmuse "$prompt" -o "output-$(date +%s).png"
+done < prompts.txt
+```
+
+## JSON output for scripting
+
+Use `--json` for machine-readable output:
+
+```bash
+pixelmuse --json "logo concept" | jq .output_path
+```
+
+JSON response format:
+
+```json
+{
+  "id": "gen_abc123...",
+  "status": "succeeded",
+  "model": "nano-banana-2",
+  "prompt": "logo concept",
+  "credits_charged": 1,
+  "visibility": "private",
+  "elapsed_seconds": 3.2,
+  "output_path": "/home/user/.local/share/pixelmuse-cli/generations/gen_abc123.png"
+}
+```
+
+On error:
+
+```json
+{
+  "error": "Insufficient credits. You have 0 credits remaining."
+}
+```
+
+## Combining flags
+
+Stack flags for precise control:
+
+```bash
+pixelmuse "hero image" \
+  -m imagen-3 \
+  -a 16:9 \
+  -s realistic \
+  -o ./public/hero.png \
+  --open
+```
+
+## Common workflows
+
+### Quick mockup generation
+
+```bash
+pixelmuse "modern dashboard UI" -m flux-schnell -a 16:9 -o mockup.png
+```
+
+### High-quality design work
+
+```bash
+pixelmuse "brand logo with text 'Acme Corp'" \
+  -m recraft-v4-pro \
+  -a 1:1 \
+  -o logo.png
+```
+
+### Batch generation with different models
+
+```bash
+for model in nano-banana-2 flux-schnell imagen-3; do
+  pixelmuse "sunset over mountains" -m "$model" -o "sunset-$model.png"
+done
+```
+
+### CI/CD integration
+
+```bash
+#!/bin/bash
+set -e
+
+export PIXELMUSE_API_KEY="pm_live_..."
+
+RESULT=$(pixelmuse --json "social media banner" -a 16:9)
+PATH=$(echo "$RESULT" | jq -r .output_path)
+
+if [ -f "$PATH" ]; then
+  echo "Generated: $PATH"
+  cp "$PATH" ./dist/social-banner.png
+else
+  echo "Generation failed"
+  exit 1
+fi
+```
+
+## Checking your account
+
+View your credit balance and usage:
+
+```bash
+pixelmuse account
+```
+
+Output:
+
+```
+Email:    user@example.com
+Plan:     starter
+Credits:  42 (30 subscription + 12 purchased)
+Rate:     60 req/min
+```
+
+## Recent generations
+
+```bash
+pixelmuse history
+```
+
+Shows your last 20 generations with status, model, prompt snippet, and timestamp.
+
+## Next steps
+
+<CardGroup cols={2}>
+  <Card title="Watch mode" icon="eye" href="/advanced/watch-mode">
+    Auto-regenerate when prompt files change
+  </Card>
+  <Card title="Prompt templates" icon="file-code" href="/guides/templates">
+    Save reusable prompts with variables
+  </Card>
+  <Card title="CLI reference" icon="terminal" href="/cli/flags">
+    All flags and options
+  </Card>
+  <Card title="Scripting guide" icon="code" href="/guides/scripting">
+    Advanced automation techniques
+  </Card>
+</CardGroup>

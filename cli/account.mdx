@@ -1,0 +1,89 @@
+---
+title: account
+description: View account balance, plan details, and usage limits
+---
+
+The `account` command displays your Pixelmuse account information including credit balance, subscription plan, and rate limits.
+
+## Usage
+
+```bash
+pixelmuse account
+```
+
+## Output
+
+Displays:
+- **Email**: Authenticated account email
+- **Plan**: Current subscription tier
+- **Credits**: Total available credits (subscription + purchased)
+- **Rate**: API rate limit (requests per minute)
+
+## Example Output
+
+```bash
+$ pixelmuse account
+
+Email:    user@example.com
+Plan:     Pro
+Credits:  250 (200 subscription + 50 purchased)
+Rate:     60 req/min
+```
+
+## Credit Breakdown
+
+Your total credits consist of:
+
+- **Subscription credits**: Monthly allocation based on your plan
+- **Purchased credits**: One-time credit purchases that don't expire
+
+The command shows both values separately so you can track usage.
+
+## Rate Limits
+
+The rate limit indicates how many API requests you can make per minute. This prevents abuse and ensures fair usage across all users.
+
+If you hit the rate limit:
+- Wait a moment before retrying
+- Consider upgrading your plan for higher limits
+- Use batch operations where possible
+
+## Account Management
+
+To manage your account, plan, or purchase credits:
+
+1. Visit [Pixelmuse Settings](https://www.pixelmuse.studio/settings)
+2. Navigate to:
+   - **Billing**: Manage subscription and purchase credits
+   - **API Keys**: Manage authentication keys
+   - **Usage**: View detailed usage analytics
+
+## Authentication Required
+
+This command requires authentication. If not logged in:
+
+```bash
+Not authenticated. Run: pixelmuse login
+```
+
+See [login](/cli/login-logout) for authentication instructions.
+
+## Monitoring Credits
+
+After each generation, you'll see updated balance:
+
+```bash
+✔ Generated in 3.2s · 2 credits charged (remaining: 248)
+```
+
+To check balance at any time without generating:
+
+```bash
+pixelmuse account
+```
+
+## Related Commands
+
+- [login](/cli/login-logout) - Authenticate your account
+- [models](/cli/models) - See credit costs per model
+- [history](/cli/history) - View past generations and credit usage

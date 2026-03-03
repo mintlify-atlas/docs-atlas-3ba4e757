@@ -1,0 +1,88 @@
+---
+title: models
+description: List available AI models with costs and capabilities
+---
+
+The `models` command displays all available AI models for image generation, including their credit costs and best use cases.
+
+## Usage
+
+```bash
+pixelmuse models
+```
+
+## Output Format
+
+Displays a table with:
+- **Model**: Model name/ID
+- **Credits**: Cost per generation
+- **Best For**: Recommended use cases and strengths
+
+## Example Output
+
+```bash
+$ pixelmuse models
+
+Model                 Credits   Best For
+──────────────────────────────────────────────────────────────────────
+nano-banana-2         1         Fast, general purpose, affordable
+nano-banana-pro       2         Higher quality, better details
+flux-schnell          1         Speed-optimized, good for iteration
+imagen-3              3         Photorealism, text rendering
+recraft-v4            2         Illustrations, vector-style
+recraft-v4-pro        4         Professional illustrations, branding
+```
+
+## Credit Cost Colors
+
+- 🟢 **Green (1 credit)**: Most affordable models
+- 🟡 **Yellow (2+ credits)**: Premium models with specialized capabilities
+
+## Model Selection
+
+Use the model ID with the `-m` or `--model` flag:
+
+```bash
+pixelmuse "portrait photo" -m imagen-3
+pixelmuse "logo design" -m recraft-v4-pro
+```
+
+Or set a default model during [setup](/cli/setup).
+
+## Model Details
+
+### nano-banana-2
+- **Cost**: 1 credit
+- **Best for**: General purpose, fast iterations, prototyping
+- **Default model** for new users
+
+### nano-banana-pro
+- **Cost**: 2 credits
+- **Best for**: Higher quality outputs, better detail
+- **When to use**: Production work, final renders
+
+### flux-schnell
+- **Cost**: 1 credit
+- **Best for**: Speed-optimized generation
+- **When to use**: Rapid prototyping, quick iterations
+
+### imagen-3
+- **Cost**: 3 credits
+- **Best for**: Photorealism, accurate text rendering
+- **When to use**: Marketing materials, realistic scenes, text in images
+
+### recraft-v4
+- **Cost**: 2 credits
+- **Best for**: Illustrations, vector-style graphics
+- **When to use**: Icons, UI elements, stylized artwork
+
+### recraft-v4-pro
+- **Cost**: 4 credits
+- **Best for**: Professional illustrations, branding assets
+- **When to use**: Client work, high-end design projects
+
+## Related Commands
+
+- [generate](/cli/generate) - Generate images with specific models
+- [account](/cli/account) - Check credit balance
+- [setup](/cli/setup) - Set default model

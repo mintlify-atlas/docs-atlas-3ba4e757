@@ -1,0 +1,58 @@
+---
+title: "MCP Server Overview"
+description: "Introduction to the Pixelmuse Model Context Protocol server and its capabilities"
+---
+
+The Pixelmuse MCP server enables AI assistants and agents to generate images programmatically through the Model Context Protocol.
+
+## What is MCP?
+
+Model Context Protocol (MCP) is an open protocol that standardizes how applications provide context to LLMs. The Pixelmuse MCP server exposes image generation capabilities as MCP tools that can be used by any MCP-compatible client (like Claude Desktop, IDEs, or custom applications).
+
+## Available Tools
+
+The Pixelmuse MCP server provides three core tools:
+
+### generate_image
+
+Generate AI images using Pixelmuse models. Supports multiple models, aspect ratios, and visual styles.
+
+[View full documentation →](/mcp/generate-image)
+
+### list_models
+
+Retrieve a list of all available image generation models with their costs, strengths, and supported aspect ratios.
+
+[View full documentation →](/mcp/list-models)
+
+### check_balance
+
+Check your Pixelmuse account credit balance and plan information.
+
+[View full documentation →](/mcp/check-balance)
+
+## Server Configuration
+
+The MCP server runs over stdio transport and requires a valid Pixelmuse API key set in the `PIXELMUSE_API_KEY` environment variable.
+
+```json
+{
+  "mcpServers": {
+    "pixelmuse": {
+      "command": "npx",
+      "args": ["-y", "pixelmuse", "mcp"],
+      "env": {
+        "PIXELMUSE_API_KEY": "your-api-key-here"
+      }
+    }
+  }
+}
+```
+
+## Authentication
+
+All MCP tools automatically authenticate using the API key from:
+1. `PIXELMUSE_API_KEY` environment variable (recommended for MCP)
+2. Stored credentials from CLI login
+
+If no API key is found, tools will return an error.

@@ -1,80 +1,396 @@
 ---
-title: "Quickstart"
-description: "Start building awesome documentation in minutes"
+title: Quick Start
+description: Generate your first AI image in under 60 seconds with the Pixelmuse CLI
 ---
 
-## Get started in three steps
+## Get Your First Image in 3 Steps
 
-Get your documentation site running locally and make your first customization.
+This guide will take you from zero to your first generated image in under a minute.
 
-### Step 1: Set up your local environment
-
-<AccordionGroup>
-  <Accordion icon="copy" title="Clone your docs locally">
-    During the onboarding process, you created a GitHub repository with your docs content if you didn't already have one. You can find a link to this repository in your [dashboard](https://dashboard.mintlify.com).
+<Steps>
+  <Step title="Run the Setup Wizard">
+    The setup wizard handles authentication, MCP configuration, and default settings:
     
-    To clone the repository locally so that you can make and preview changes to your docs, follow the [Cloning a repository](https://docs.github.com/en/repositories/creating-and-managing-repositories/cloning-a-repository) guide in the GitHub docs.
-  </Accordion>
-  <Accordion icon="rectangle-terminal" title="Start the preview server">
-    1. Install the Mintlify CLI: `npm i -g mint`
-    2. Navigate to your docs directory and run: `mint dev`
-    3. Open `http://localhost:3000` to see your docs live!
+    ```bash
+    pixelmuse setup
+    ```
     
-    <Tip>Your preview updates automatically as you edit files.</Tip>
-  </Accordion>
-</AccordionGroup>
-
-### Step 2: Deploy your changes
-
-<AccordionGroup>
-  <Accordion icon="github" title="Install our GitHub app">
-    Install the Mintlify GitHub app from your [dashboard](https://dashboard.mintlify.com/settings/organization/github-app).
+    This will:
+    - Open your browser to authenticate (or prompt for an API key)
+    - Optionally configure the MCP server for Claude Code, Cursor, or Windsurf
+    - Let you customize default model and settings (or use smart defaults)
     
-    Our GitHub app automatically deploys your changes to your docs site, so you don't need to manage deployments yourself.
-</Accordion>
-<Accordion icon="palette" title="Update your site name and colors">
-    For a first change, let's update the name and colors of your docs site.
+    <Note>
+      New accounts include **15 free credits**. Most models cost 1 credit per generation.
+    </Note>
+  </Step>
+  
+  <Step title="Generate Your First Image">
+    Create an image with a simple prompt:
+    
+    ```bash
+    pixelmuse "a cat floating through space"
+    ```
+    
+    You'll see:
+    - A spinner showing generation progress
+    - Credit cost and remaining balance
+    - The saved file path
+    - An inline preview (if you have [chafa](https://hpjansson.org/chafa/) installed)
+    
+    Example output:
+    ```
+    ✔ Generated in 3.2s · 1 credit charged (remaining: 14) · private
+      Saved to a-cat-floating-through-space.png
+    ```
+  </Step>
+  
+  <Step title="Customize Your Generation">
+    Try different models, aspect ratios, and styles:
+    
+    ```bash
+    pixelmuse "neon cityscape at night" -m recraft-v4 -a 16:9
+    ```
+    
+    Or save to a specific path:
+    
+    ```bash
+    pixelmuse "app icon, minimal" -a 1:1 -o icon.png
+    ```
+  </Step>
+</Steps>
 
-    1. Open `docs.json` in your editor.
-    2. Change the `"name"` field to your project name.
-    3. Update the `"colors"` to match your brand.
-    4. Save and see your changes instantly at `http://localhost:3000`.
+## Common Use Cases
 
-    <Tip>Try changing the primary color to see an immediate difference!</Tip>
-  </Accordion>
-</AccordionGroup>
+### Choose a Model
 
-### Step 3: Go live
+Pixelmuse supports multiple AI models. Use the `-m` flag to select one:
 
-<Accordion icon="rocket" title="Publish your docs">
-  1. Commit and push your changes.
-  2. Your docs will update and be live in moments!
-</Accordion>
+<CodeGroup>
+```bash Nano Banana 2 (Default)
+pixelmuse "sunset over mountains" -m nano-banana-2
+# 1 credit · Fast · Great for text rendering
+```
 
-## Next steps
+```bash Google Imagen 3
+pixelmuse "photorealistic portrait" -m imagen-3
+# 1 credit · Realistic photos · Complex compositions
+```
 
-Now that you have your docs running, explore these key features:
+```bash Recraft V4
+pixelmuse "modern logo design" -m recraft-v4
+# 1 credit · Typography · Design · Composition
+```
 
-<CardGroup cols={2}>
+```bash Flux Schnell
+pixelmuse "quick mockup concept" -m flux-schnell
+# 1 credit · Speed · Ideation
+```
+</CodeGroup>
 
-<Card title="Write Content" icon="pen-to-square" href="/essentials/markdown">
-  Learn MDX syntax and start writing your documentation.
-</Card>
+See all available models:
 
-<Card title="Customize style" icon="palette" href="/essentials/settings">
-  Make your docs match your brand perfectly.
-</Card>
+```bash
+pixelmuse models
+```
 
-<Card title="Add code examples" icon="square-code" href="/essentials/code">
-  Include syntax-highlighted code blocks.
-</Card>
+Output:
+```
+Model                  Credits    Best For
+──────────────────────────────────────────────────────────────────────
+Nano Banana 2          1          Speed, text rendering, world knowledge
+Nano Banana Pro        4          Text rendering, real-time info, multi-image editing
+Flux Schnell           1          Quick mockups, ideation
+Google Imagen 3        1          Realistic photos, complex compositions
+Recraft V4             1          Typography, design, composition
+Recraft V4 Pro         7          High-res design, art direction
+```
 
-<Card title="API documentation" icon="code" href="/api-reference/introduction">
-  Auto-generate API docs from OpenAPI specs.
-</Card>
+### Select Aspect Ratio
 
-</CardGroup>
+Generate images in different dimensions:
+
+<CodeGroup>
+```bash Square (1:1)
+pixelmuse "app icon, gradient" -a 1:1
+```
+
+```bash Landscape (16:9)
+pixelmuse "hero banner for website" -a 16:9
+```
+
+```bash Portrait (9:16)
+pixelmuse "phone wallpaper, abstract" -a 9:16
+```
+
+```bash Ultrawide (21:9)
+pixelmuse "cinematic landscape" -a 21:9
+```
+</CodeGroup>
+
+Supported aspect ratios: `1:1`, `16:9`, `9:16`, `3:2`, `2:3`, `4:5`, `5:4`, `3:4`, `4:3`, `21:9`, `9:21`
+
+### Apply Styles
+
+Add visual style presets to your generations:
+
+<CodeGroup>
+```bash Realistic
+pixelmuse "portrait of a chef" -s realistic
+```
+
+```bash Anime
+pixelmuse "mountain landscape" -s anime
+```
+
+```bash Artistic
+pixelmuse "abstract composition" -s artistic
+```
+
+```bash No Style (Default)
+pixelmuse "sunset" -s none
+```
+</CodeGroup>
+
+### Save to Specific Path
+
+By default, images save to your current directory with a slugified prompt name. Override with `-o`:
+
+```bash
+pixelmuse "hero image" -o ./public/hero.png
+pixelmuse "avatar" -o ~/Desktop/avatar.jpg
+```
 
 <Note>
-  **Need help?** See our [full documentation](https://mintlify.com/docs) or join our [community](https://mintlify.com/community).
+  Pixelmuse auto-detects image format from the file extension (`.png`, `.jpg`, `.jpeg`, `.webp`).
+</Note>
+
+## Developer Workflows
+
+### Pipe from stdin
+
+Generate images from file contents or command output:
+
+```bash
+echo "hero banner for SaaS landing page" | pixelmuse -o hero.png
+cat prompt.txt | pixelmuse -m recraft-v4
+```
+
+### JSON Output for Scripting
+
+Get machine-readable output:
+
+```bash
+pixelmuse --json "logo concept" | jq
+```
+
+Output:
+```json
+{
+  "id": "gen_abc123xyz",
+  "status": "succeeded",
+  "model": "nano-banana-2",
+  "prompt": "logo concept",
+  "credits_charged": 1,
+  "visibility": "private",
+  "elapsed_seconds": 3.2,
+  "output_path": "logo-concept.png"
+}
+```
+
+Extract just the path:
+
+```bash
+OUTPUT=$(pixelmuse --json "icon" | jq -r .output_path)
+echo "Saved to: $OUTPUT"
+```
+
+### Watch Mode for Iteration
+
+Auto-regenerate when a prompt file changes:
+
+```bash
+pixelmuse --watch prompt.txt -o output.png
+```
+
+Now edit `prompt.txt` in your editor. Every time you save, Pixelmuse regenerates the image:
+
+```
+Watching /path/to/prompt.txt for changes... (Ctrl+C to stop)
+✔ [14:23:45] Saved to output.png (3.1s)
+✔ [14:24:02] Saved to output.png (2.9s)
+```
+
+<Note>
+  Perfect for iterating on prompts — edit text, see the result instantly.
+</Note>
+
+### Additional Flags
+
+<CodeGroup>
+```bash Copy to Clipboard
+pixelmuse "avatar" --clipboard
+```
+
+```bash Open in System Viewer
+pixelmuse "landscape" --open
+```
+
+```bash Skip Terminal Preview
+pixelmuse "icon" --no-preview
+```
+
+```bash Don't Save to Disk
+pixelmuse "test" --no-save
+```
+
+```bash Make Public
+pixelmuse "artwork" --public
+```
+</CodeGroup>
+
+## Check Your Account
+
+View your credit balance and usage:
+
+```bash
+pixelmuse account
+```
+
+Output:
+```
+Email:    user@example.com
+Plan:     starter
+Credits:  14 (10 subscription + 4 purchased)
+Rate:     60 req/min
+```
+
+## View Generation History
+
+See your recent generations:
+
+```bash
+pixelmuse history
+```
+
+Output:
+```
+ID                 Model                  Prompt                             Date
+──────────────────────────────────────────────────────────────────────────────────────────
+gen_abc123xyz...   ● nano-banana-2 🔒      a cat floating through space      2 hours ago
+gen_def456uvw...   ● recraft-v4 🔒         neon cityscape at night           1 day ago
+```
+
+Open a generation in your system viewer:
+
+```bash
+pixelmuse open gen_abc123xyz
+```
+
+## Launch the Interactive TUI
+
+For a visual interface with menus, galleries, and wizards:
+
+```bash
+pixelmuse ui
+```
+
+The TUI provides:
+- Visual model selection
+- Guided generation wizard
+- Gallery browser with previews
+- Account overview
+- Prompt template management
+
+<Note>
+  Use arrow keys to navigate, Enter to select, and Esc to go back.
+</Note>
+
+## Use Prompt Templates
+
+Create reusable prompts with variables:
+
+<Steps>
+  <Step title="Create a Template">
+    ```bash
+    pixelmuse template init blog-thumbnail
+    ```
+    
+    This creates `~/.config/pixelmuse-cli/prompts/blog-thumbnail.yaml`
+  </Step>
+  
+  <Step title="Edit the Template">
+    Open the file and customize:
+    
+    ```yaml
+    name: Blog Thumbnail
+    description: Dark-themed blog post thumbnail
+    prompt: >
+      A cinematic {{subject}} on a dark gradient background,
+      dramatic lighting, 8K resolution
+    defaults:
+      model: nano-banana-2
+      aspect_ratio: "16:9"
+    variables:
+      subject: "code editor with syntax highlighting"
+    tags: [blog, thumbnail, dark]
+    ```
+  </Step>
+  
+  <Step title="Use the Template">
+    Generate with variable substitution:
+    
+    ```bash
+    pixelmuse template use blog-thumbnail --var subject="React hooks guide"
+    ```
+    
+    The template's default model and aspect ratio are applied automatically.
+  </Step>
+</Steps>
+
+List all templates:
+
+```bash
+pixelmuse template list
+```
+
+Show template details:
+
+```bash
+pixelmuse template show blog-thumbnail
+```
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card title="CLI Reference" icon="terminal" href="/cli/commands">
+    Complete command and flag documentation
+  </Card>
+  <Card title="Interactive TUI" icon="grid" href="/tui/overview">
+    Learn about the terminal UI interface
+  </Card>
+  <Card title="MCP Server" icon="robot" href="/mcp/setup">
+    Set up AI agent integration for Claude, Cursor, Windsurf
+  </Card>
+  <Card title="Prompt Templates" icon="file-code" href="/templates/overview">
+    Advanced template usage and examples
+  </Card>
+</CardGroup>
+
+## Tips for Better Results
+
+<Note>
+  **Be specific** — "A red 1967 Ford Mustang on a coastal highway at sunset, cinematic lighting" works better than "car"
+</Note>
+
+<Note>
+  **Choose the right model** — Use `imagen-3` for photorealism, `recraft-v4` for typography/design, `nano-banana-2` for speed
+</Note>
+
+<Note>
+  **Iterate with watch mode** — Use `--watch` to refine prompts in real-time
+</Note>
+
+<Note>
+  **Check model costs** — Run `pixelmuse models` to see credit costs before generating
 </Note>

@@ -1,0 +1,114 @@
+---
+title: "list_models"
+description: "List all available Pixelmuse image generation models"
+---
+
+List all available Pixelmuse image generation models with their costs and capabilities.
+
+This tool requires no input parameters and returns comprehensive information about each available model.
+
+## Input Parameters
+
+This tool accepts no parameters.
+
+## Response Fields
+
+Returns an array of model objects, each containing:
+
+<ResponseField name="id" type="string">
+  Unique model identifier used in generation requests.
+</ResponseField>
+
+<ResponseField name="name" type="string">
+  Human-readable model name.
+</ResponseField>
+
+<ResponseField name="credit_cost" type="number">
+  Number of credits charged per image generation.
+</ResponseField>
+
+<ResponseField name="strengths" type="string[]">
+  Array of strings describing the model's strengths and ideal use cases.
+</ResponseField>
+
+<ResponseField name="supported_aspect_ratios" type="string[]">
+  Array of aspect ratios supported by this model (e.g., ["1:1", "16:9", "9:16"]).
+</ResponseField>
+
+## Example Request
+
+```json
+{}
+```
+
+## Example Response
+
+```json
+[
+  {
+    "id": "nano-banana-2",
+    "name": "Nano Banana 2",
+    "credit_cost": 1,
+    "strengths": [
+      "Fast generation",
+      "Low cost",
+      "Good for rapid prototyping"
+    ],
+    "supported_aspect_ratios": [
+      "1:1",
+      "16:9",
+      "9:16",
+      "3:2",
+      "2:3"
+    ]
+  },
+  {
+    "id": "flux-schnell",
+    "name": "FLUX Schnell",
+    "credit_cost": 5,
+    "strengths": [
+      "High quality",
+      "Excellent prompt following",
+      "Versatile style range"
+    ],
+    "supported_aspect_ratios": [
+      "1:1",
+      "16:9",
+      "9:16",
+      "3:2",
+      "2:3",
+      "4:5",
+      "5:4"
+    ]
+  },
+  {
+    "id": "imagen-3",
+    "name": "Imagen 3",
+    "credit_cost": 8,
+    "strengths": [
+      "Photorealistic output",
+      "Advanced text rendering",
+      "High detail"
+    ],
+    "supported_aspect_ratios": [
+      "1:1",
+      "16:9",
+      "9:16",
+      "3:4",
+      "4:3"
+    ]
+  }
+]
+```
+
+## Usage
+
+Use this tool to:
+- Discover available models before generating images
+- Check credit costs for different models
+- Verify which aspect ratios are supported by a specific model
+- Understand model strengths to choose the best option for your use case
+
+## Error Handling
+
+This tool makes a static API call and should generally succeed unless there are network connectivity issues.
