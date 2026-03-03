@@ -1,0 +1,121 @@
+{
+  "projectType": "cli-tool",
+  "projectName": "Pixelmuse CLI",
+  "projectDescription": "AI image generation from the terminal with CLI, TUI, and MCP server for multiple models",
+  "theme": "aspen",
+  "primaryColor": "#8B5CF6",
+  "lightColor": "#A78BFA",
+  "darkColor": "#6D28D9",
+  "navigation": {
+    "tabs": [
+      {
+        "tab": "Documentation",
+        "groups": [
+          {
+            "group": "Get Started",
+            "pages": [
+              "introduction",
+              "installation",
+              "quickstart"
+            ]
+          },
+          {
+            "group": "Core Concepts",
+            "pages": [
+              "concepts/interfaces",
+              "concepts/models",
+              "concepts/prompts",
+              "concepts/configuration"
+            ]
+          },
+          {
+            "group": "Guides",
+            "pages": [
+              "guides/cli-usage",
+              "guides/tui",
+              "guides/templates",
+              "guides/scripting",
+              "guides/mcp-server"
+            ]
+          },
+          {
+            "group": "Advanced",
+            "pages": [
+              "advanced/watch-mode",
+              "advanced/authentication",
+              "advanced/output-formats"
+            ]
+          }
+        ]
+      },
+      {
+        "tab": "CLI Reference",
+        "groups": [
+          {
+            "group": "Commands",
+            "pages": [
+              "cli/generate",
+              "cli/setup",
+              "cli/models",
+              "cli/account",
+              "cli/history",
+              "cli/template",
+              "cli/ui",
+              "cli/login-logout"
+            ]
+          },
+          {
+            "group": "Options",
+            "pages": [
+              "cli/flags",
+              "cli/environment"
+            ]
+          }
+        ]
+      },
+      {
+        "tab": "MCP Reference",
+        "groups": [
+          {
+            "group": "Tools",
+            "pages": [
+              "mcp/overview",
+              "mcp/generate-image",
+              "mcp/list-models",
+              "mcp/check-balance"
+            ]
+          },
+          {
+            "group": "Integration",
+            "pages": [
+              "mcp/claude-code",
+              "mcp/cursor",
+              "mcp/windsurf"
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "keyFeatures": [
+    "Generate images with Flux, Imagen 3, Recraft V4, and more models",
+    "CLI with pipe support, JSON output, and watch mode for scripting",
+    "Interactive TUI with visual browsing and generation wizards",
+    "MCP server for AI agents (Claude, Cursor, Windsurf)",
+    "Reusable prompt templates with variables and defaults",
+    "Device-based authentication with browser flow"
+  ],
+  "publicApiSurface": [
+    "pixelmuse [prompt] - Generate image",
+    "pixelmuse setup - First-time setup wizard",
+    "pixelmuse models - List available models",
+    "pixelmuse account - View balance and usage",
+    "pixelmuse history - Recent generations",
+    "pixelmuse open <id> - Open generation in viewer",
+    "pixelmuse login - Authenticate",
+    "pixelmuse logout - Remove credentials",
+    "pixelmuse template <cmd> - Manage prompt templates",
+    "pixelmuse ui - Launch interactive TUI",
+    "pixelmuse-mcp - MCP server binary"
+  ]
+}
